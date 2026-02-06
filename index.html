@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PrepIQ - AI Smart Answer Generator</title>
+    <title>PrepIQ - Exam Answer Generator</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -12,8 +12,6 @@
         .active-mark { background-color: #2563eb; color: white; border-color: #1e3a8a; }
         .chat-container::-webkit-scrollbar { width: 6px; }
         .chat-container::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        .loading-shimmer { background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
-        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
     </style>
 </head>
 <body class="bg-[#f3f7fa] font-sans text-slate-800">
@@ -21,163 +19,157 @@
     <nav class="bg-[#2b6cb0] text-white p-3 px-6 flex justify-between items-center shadow-md">
         <div class="flex items-center gap-3">
             <i class="fas fa-brain text-2xl"></i>
-            <h1 class="text-lg font-bold">PrepIQ <span class="font-normal text-sm opacity-80">— St. Peter's AI Assistant</span></h1>
+            <h1 class="text-lg font-bold">PrepIQ <span class="font-normal text-sm opacity-80">— St. Peter's AI Answer Hub</span></h1>
         </div>
-        <div class="flex gap-4 items-center">
-            <span id="status-badge" class="text-[10px] bg-red-500 px-2 py-1 rounded-full uppercase font-bold">No Notes Loaded</span>
-            <i class="fas fa-volume-up cursor-pointer hover:text-blue-200" onclick="voiceOutput()"></i>
-        </div>
+        <div id="status-badge" class="text-[10px] bg-red-500 px-2 py-1 rounded-full uppercase font-bold">Upload Notes to Start</div>
     </nav>
 
     <main class="container mx-auto p-6 grid grid-cols-12 gap-6">
-        <div class="col-span-3 space-y-6">
-            <div class="bg-white rounded shadow-sm overflow-hidden border">
-                <div class="bg-slate-100 p-3 font-bold text-xs uppercase text-slate-500">Subject List</div>
+        <div class="col-span-3 space-y-4">
+            <div class="bg-white rounded shadow-sm border">
+                <div class="bg-slate-100 p-3 font-bold text-xs text-slate-500 uppercase">Subject</div>
                 <div id="topic-list" class="flex flex-col text-sm">
-                    <button onclick="setTopic('CCS340')" class="p-3 text-left border-b hover:bg-slate-50 active-topic">Cyber Security (CCS340)</button>
-                    <button onclick="setTopic('CCW331')" class="p-3 text-left border-b hover:bg-slate-50">Business Analytics (CCW331)</button>
-                    <button onclick="setTopic('CS3691')" class="p-3 text-left border-b hover:bg-slate-50">Embedded & IoT (CS3691)</button>
-                    <button onclick="setTopic('CCS345')" class="p-3 text-left border-b hover:bg-slate-50">Ethics and AI (CCS345)</button>
+                    <button onclick="setTopic('CCS340')" class="p-3 text-left border-b active-topic">Cyber Security (CCS340)</button>
+                    <button onclick="setTopic('CCW331')" class="p-3 text-left border-b">Business Analytics (CCW331)</button>
+                    <button onclick="setTopic('CS3691')" class="p-3 text-left border-b">Embedded & IoT (CS3691)</button>
+                    <button onclick="setTopic('CCS345')" class="p-3 text-left">Ethics and AI (CCS345)</button>
                 </div>
             </div>
 
             <div class="bg-white rounded shadow-sm border p-4">
                 <div class="text-slate-500 font-bold text-xs uppercase mb-3">Target Marks</div>
                 <div class="grid grid-cols-3 gap-2">
-                    <button onclick="setMarks(2)" id="m2" class="border py-2 text-xs rounded font-bold hover:bg-blue-50">2M</button>
-                    <button onclick="setMarks(8)" id="m8" class="border py-2 text-xs rounded font-bold hover:bg-blue-50">8M</button>
+                    <button onclick="setMarks(2)" id="m2" class="border py-2 text-xs rounded font-bold">2M</button>
+                    <button onclick="setMarks(8)" id="m8" class="border py-2 text-xs rounded font-bold">8M</button>
                     <button onclick="setMarks(16)" id="m16" class="border py-2 text-xs rounded font-bold active-mark">16M</button>
                 </div>
             </div>
 
-            <div class="bg-white rounded shadow-sm border p-4">
-                <label class="cursor-pointer flex flex-col items-center justify-center gap-2 bg-blue-50 border-2 border-dashed border-blue-200 p-6 rounded-xl hover:bg-blue-100 transition">
-                    <i class="fas fa-file-pdf text-2xl text-blue-600"></i>
-                    <span class="text-[10px] font-black text-blue-800 uppercase">Upload Unit Notes</span>
+            <div class="bg-white rounded shadow-sm border p-4 text-center">
+                <label class="cursor-pointer block bg-blue-50 border-2 border-dashed border-blue-200 p-4 rounded-xl hover:bg-blue-100">
+                    <i class="fas fa-file-pdf text-blue-600 mb-2"></i>
+                    <span class="block text-[10px] font-bold uppercase">Upload Unit PDF</span>
                     <input type="file" id="pdf-upload" class="hidden" accept="application/pdf">
                 </label>
             </div>
         </div>
 
-        <div class="col-span-9 flex flex-col h-[800px] bg-white rounded shadow-lg border overflow-hidden">
-            <div id="ai-response-area" class="flex-1 overflow-y-auto p-10 space-y-6 chat-container bg-[#fcfcfc]">
-                <div id="empty-state" class="text-center mt-20">
-                    <i class="fas fa-robot text-6xl text-slate-200 mb-4"></i>
-                    <h3 class="text-xl font-bold text-slate-400">Ready to Analyze</h3>
-                    <p class="text-slate-400 text-sm">Upload your PDF notes and type a question below.</p>
+        <div class="col-span-9 flex flex-col h-[750px] bg-white rounded shadow-lg border overflow-hidden">
+            <div id="answer-area" class="flex-1 overflow-y-auto p-8 chat-container bg-white">
+                <div id="placeholder" class="text-center py-20 text-slate-300">
+                    <i class="fas fa-pen-nib text-6xl mb-4"></i>
+                    <p>Enter a question or topic to generate your study answer.</p>
                 </div>
-                <div id="answer-content" class="hidden animate-fade-in">
-                    </div>
+                <div id="output-text" class="prose prose-blue max-w-none"></div>
             </div>
 
-            <div class="p-5 border-t bg-white shadow-2xl">
-                <div class="flex items-center gap-4 border-2 rounded-2xl px-5 py-2 bg-slate-50 focus-within:bg-white focus-within:ring-2 focus-within:ring-blue-400 transition-all">
-                    <input id="user-query" type="text" placeholder="Enter question or topic (e.g. Discuss the role of cybercriminals)..." class="bg-transparent flex-1 outline-none text-sm py-2">
-                    <i class="fas fa-microphone text-slate-400 cursor-pointer hover:text-red-500" onclick="startVoiceRecognition()"></i>
-                    <button onclick="processQuery()" class="bg-[#2b6cb0] text-white px-8 py-3 rounded-xl font-bold text-sm hover:bg-blue-800 shadow-lg">Generate Answer</button>
+            <div class="p-4 border-t bg-slate-50">
+                <div class="flex items-center gap-3 bg-white border rounded-xl px-4 py-1 shadow-inner focus-within:ring-2 focus-within:ring-blue-400">
+                    <input id="user-query" type="text" placeholder="e.g. Discuss the role of cybercriminals..." class="flex-1 outline-none text-sm py-3">
+                    <i class="fas fa-microphone text-slate-400 cursor-pointer hover:text-red-500" onclick="startVoice()"></i>
+                    <button onclick="generateAnswer()" class="bg-[#2b6cb0] text-white px-6 py-2 rounded-lg font-bold text-sm">Generate</button>
                 </div>
             </div>
         </div>
     </main>
 
     <script>
-        let extractedText = "";
-        let currentMarks = 16;
-        let currentSubject = "CCS340";
+        let noteContent = "";
+        let selectedMarks = 16;
+        let selectedSubject = "CCS340";
 
-        // Initialize PDF.js
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
 
-        // 1. PDF Analysis Logic
+        // PDF Text Extraction
         document.getElementById('pdf-upload').addEventListener('change', async (e) => {
             const file = e.target.files[0];
             if (file) {
-                document.getElementById('status-badge').innerText = "Analyzing PDF...";
-                document.getElementById('status-badge').className = "text-[10px] bg-yellow-500 px-2 py-1 rounded-full uppercase font-bold";
-                
                 const reader = new FileReader();
                 reader.onload = async function() {
-                    const typedarray = new Uint8Array(this.result);
-                    const pdf = await pdfjsLib.getDocument(typedarray).promise;
+                    const pdf = await pdfjsLib.getDocument(new Uint8Array(this.result)).promise;
                     let text = "";
                     for (let i = 1; i <= pdf.numPages; i++) {
                         const page = await pdf.getPage(i);
                         const content = await page.getTextContent();
                         text += content.items.map(item => item.str).join(" ");
                     }
-                    extractedText = text;
-                    document.getElementById('status-badge').innerText = "Notes Ready";
+                    noteContent = text;
                     document.getElementById('status-badge').className = "text-[10px] bg-green-500 px-2 py-1 rounded-full uppercase font-bold";
+                    document.getElementById('status-badge').innerText = "Notes Synced Successfully";
                 };
                 reader.readAsArrayBuffer(file);
             }
         });
 
         function setMarks(m) {
-            currentMarks = m;
-            [2, 8, 16].forEach(val => {
-                document.getElementById(`m${val}`).className = (val === m) ? "border py-2 text-xs rounded font-bold active-mark" : "border py-2 text-xs rounded font-bold hover:bg-blue-50";
-            });
+            selectedMarks = m;
+            document.querySelectorAll('[id^="m"]').forEach(btn => btn.classList.remove('active-mark'));
+            document.getElementById('m'+m).classList.add('active-mark');
         }
 
         function setTopic(code) {
-            currentSubject = code;
+            selectedSubject = code;
             document.querySelectorAll('#topic-list button').forEach(b => b.classList.remove('active-topic'));
             event.currentTarget.classList.add('active-topic');
         }
 
-        // 2. Answer Generation based on Mark Type
-        function processQuery() {
+        function generateAnswer() {
             const query = document.getElementById('user-query').value;
-            if (!query) return;
-
-            document.getElementById('empty-state').classList.add('hidden');
-            const display = document.getElementById('answer-content');
-            display.classList.remove('hidden');
-            display.innerHTML = `<div class="space-y-4"><div class="h-4 loading-shimmer rounded w-3/4"></div><div class="h-4 loading-shimmer rounded w-1/2"></div></div>`;
+            const output = document.getElementById('output-text');
+            const placeholder = document.getElementById('placeholder');
+            
+            if(!query) return;
+            placeholder.classList.add('hidden');
+            output.innerHTML = `<div class="animate-pulse space-y-4"><div class="h-4 bg-slate-200 rounded w-1/4"></div><div class="h-10 bg-slate-100 rounded"></div><div class="h-32 bg-slate-50 rounded"></div></div>`;
 
             setTimeout(() => {
-                let result = `<h2 class="text-2xl font-black text-blue-800 mb-6 uppercase tracking-tight">${query}</h2>`;
+                let html = `<h2 class="text-2xl font-bold text-blue-900 border-b pb-2 mb-6">${query}</h2>`;
                 
-                if (currentMarks == 2) {
-                    result += `<div class="p-6 bg-blue-50 border-l-4 border-blue-500 rounded-r-xl">
-                                <p class="font-bold text-blue-700 uppercase text-[10px] mb-2">Short Answer Definition</p>
-                                <p class="text-slate-700 leading-relaxed italic">"Defined as the process described in the uploaded notes for ${currentSubject}, focusing on primary technical definitions and immediate functional roles."</p>
-                               </div>`;
-                } else if (currentMarks == 8) {
-                    result += `<div class="space-y-4">
-                                <p class="font-bold text-slate-800">Key Classifications & Roles:</p>
-                                <ul class="grid grid-cols-1 gap-3">
-                                    <li class="bg-white border p-4 rounded-xl shadow-sm"><b>1. Technical Role:</b> Analysis of the infrastructure as per Unit notes.</li>
-                                    <li class="bg-white border p-4 rounded-xl shadow-sm"><b>2. Operational Impact:</b> How this affects ${currentSubject} systems.</li>
-                                    <li class="bg-white border p-4 rounded-xl shadow-sm"><b>3. Classification:</b> Major categories found in the document.</li>
+                if (selectedMarks == 2) {
+                    html += `<div class="p-4 bg-blue-50 rounded-lg border-l-4 border-blue-600">
+                                <p class="font-bold text-blue-800 mb-1">Answer (2 Marks):</p>
+                                <p class="text-slate-700">Detailed definition and core purpose of ${query} as identified in ${selectedSubject} notes. Usually consists of 2-3 precise sentences.</p>
+                             </div>`;
+                } else if (selectedMarks == 8) {
+                    html += `<div class="space-y-4">
+                                <p class="font-bold">Key Points for ${query}:</p>
+                                <ul class="list-disc pl-5 space-y-2 text-slate-700">
+                                    <li><b>Classification:</b> Categories found in the uploaded document.</li>
+                                    <li><b>Core Features:</b> Technical characteristics relevant to ${selectedSubject}.</li>
+                                    <li><b>Role/Impact:</b> Why this concept is critical in the current unit.</li>
+                                    <li><b>Example:</b> Real-world application mentioned in your notes.</li>
                                 </ul>
-                               </div>`;
+                             </div>`;
                 } else {
-                    result += `<div class="space-y-8">
-                                <div class="p-6 bg-slate-900 text-white rounded-2xl">
-                                    <p class="text-blue-400 font-bold uppercase text-[10px] mb-2 tracking-widest">Detailed Architecture</p>
-                                    <p class="mb-2"><b>Step 1: Initiation</b> - Analysis based on context-specific protocols.</p>
-                                    <p class="mb-2"><b>Step 2: Processing</b> - Data logic extracted from the uploaded PDF.</p>
-                                    <p><b>Step 3: Output</b> - Final verification and results.</p>
-                                </div>
-                                <div class="border-2 border-dashed border-slate-200 p-16 rounded-3xl text-center">
-                                    <i class="fas fa-project-diagram text-4xl text-blue-200 mb-4"></i>
-                                    <p class="text-slate-400 font-bold uppercase text-[10px]"></p>
-                                    <p class="text-slate-300 text-xs mt-2 italic">Figure: Generated based on Note Analysis</p>
-                                </div>
-                                <div class="bg-green-50 p-6 rounded-2xl border border-green-100">
-                                    <p class="font-bold text-green-800 mb-2">Conclusion:</p>
-                                    <p class="text-sm text-green-700">Summarizing the ${query} for University Examination standards.</p>
-                                </div>
-                               </div>`;
+                    html += `<div class="space-y-6">
+                                <section>
+                                    <h3 class="font-bold text-lg text-slate-800 mb-2">1. Introduction</h3>
+                                    <p class="text-slate-600 italic leading-relaxed">Contextual overview of ${query} based on the ${selectedSubject} syllabus content.</p>
+                                </section>
+                                <section class="bg-slate-50 p-6 rounded-xl border">
+                                    <h3 class="font-bold text-slate-800 mb-3 underline">2. Detailed Analysis & Classification</h3>
+                                    <div class="grid grid-cols-1 gap-4 text-sm">
+                                        <div class="bg-white p-3 rounded shadow-sm border-l-4 border-blue-400"><b>Category A:</b> Explanation extracted from PDF text analysis.</div>
+                                        <div class="bg-white p-3 rounded shadow-sm border-l-4 border-blue-400"><b>Category B:</b> Functional details regarding the ${selectedSubject} framework.</div>
+                                    </div>
+                                </section>
+                                <section class="border-2 border-dashed border-slate-200 p-10 rounded-2xl text-center">
+                                    <p class="text-slate-400 text-xs font-bold uppercase mb-2">Diagram Requirement</p>
+                                    <div class="text-blue-500 font-bold">[Insert Diagram of ${query} here]</div>
+                                    <p class="text-slate-400 text-[10px] mt-2 italic">Sketch the flow as per Figure 3.2 in your unit notes.</p>
+                                </section>
+                                <section class="bg-green-50 p-4 rounded-lg border border-green-100">
+                                    <p class="font-bold text-green-800">Conclusion:</p>
+                                    <p class="text-sm text-green-700">Exam summary highlighting the significance of ${query}.</p>
+                                </section>
+                             </div>`;
                 }
-                display.innerHTML = result;
-            }, 800);
+                output.innerHTML = html;
+                window.speechSynthesis.speak(new SpeechSynthesisUtterance(query + " answer generated."));
+            }, 1000);
         }
 
-        // 3. Voice Logic
-        function startVoiceRecognition() {
+        function startVoice() {
             const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
             recognition.onstart = () => document.querySelector('.fa-microphone').classList.add('text-red-500');
             recognition.onresult = (e) => {
@@ -185,12 +177,6 @@
                 document.querySelector('.fa-microphone').classList.remove('text-red-500');
             };
             recognition.start();
-        }
-
-        function voiceOutput() {
-            const text = document.getElementById('answer-content').innerText;
-            const speech = new SpeechSynthesisUtterance(text);
-            window.speechSynthesis.speak(speech);
         }
     </script>
 </body>
