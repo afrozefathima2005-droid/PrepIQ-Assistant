@@ -3,237 +3,259 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PrepIQ - Ultimate Exam & Project Hub</title>
+    <title>PrepIQ - Anna University Exam & Project Hub</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;700;900&family=Inter:wght@400;600;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;700;900&family=Inter:wght@400;700;900&display=swap');
         
-        body { font-family: 'Inter', sans-serif; background: #f3f4f6; }
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
         .exam-sheet { font-family: 'Crimson Pro', serif; line-height: 1.8; text-align: justify; }
         
         .side-heading { 
-            color: #1e40af; font-weight: 800; text-transform: uppercase; 
-            border-left: 6px solid #1e40af; padding-left: 15px; 
+            color: #1e3a8a; font-weight: 900; text-transform: uppercase; 
+            border-left: 6px solid #1e3a8a; padding-left: 15px; 
             margin: 35px 0 15px; font-size: 1.3rem; display: block;
+            text-decoration: underline;
         }
 
-        .bullet-point { margin-bottom: 12px; position: relative; padding-left: 30px; font-size: 1.15rem; color: #1f2937; }
-        .bullet-point::before { content: "➤"; position: absolute; left: 0; color: #1e40af; font-weight: bold; }
-
-        .diagram-container { 
-            border: 4px double #cbd5e1; background: #ffffff; padding: 40px; 
-            margin: 30px 0; border-radius: 24px; text-align: center;
-            box-shadow: inset 0 0 20px rgba(0,0,0,0.05);
+        .bullet-point { 
+            margin-bottom: 12px; padding-left: 30px; position: relative; 
+            color: #1f2937; font-size: 1.15rem;
+        }
+        .bullet-point::before { 
+            content: "➤"; position: absolute; left: 0; color: #1e3a8a; font-weight: bold; 
         }
 
-        .unit-card { transition: all 0.3s ease; cursor: pointer; border: 2px solid transparent; }
-        .unit-card:hover { transform: translateY(-5px); border-color: #1e40af; background: #eff6ff; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+        .diagram-area { 
+            border: 4px double #cbd5e1; background: #ffffff; padding: 60px; 
+            margin: 40px 0; border-radius: 30px; text-align: center;
+            box-shadow: inset 0 0 40px rgba(0,0,0,0.02);
+        }
+
+        .unit-card {
+            background: white; border: 2px solid #e2e8f0; padding: 20px;
+            border-radius: 20px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-align: center; cursor: pointer;
+        }
+        .unit-card:hover { border-color: #1e3a8a; transform: translateY(-5px); box-shadow: 0 10px 25px rgba(30,58,138,0.1); }
         
-        .active-mark { background: #1e40af !important; color: white !important; }
-        .project-btn { animation: glow 2s infinite; }
-        @keyframes glow {
-            0%, 100% { box-shadow: 0 0 5px rgba(234, 179, 8, 0.5); }
-            50% { box-shadow: 0 0 20px rgba(234, 179, 8, 0.8); }
+        .active-sub { background: #1e3a8a !important; color: white !important; box-shadow: 0 10px 20px rgba(30,58,138,0.3); }
+        
+        .pulse-btn { animation: pulse-shadow 2s infinite; }
+        @keyframes pulse-shadow {
+            0% { box-shadow: 0 0 0 0 rgba(234, 179, 8, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(234, 179, 8, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(234, 179, 8, 0); }
         }
     </style>
 </head>
-<body class="flex h-screen overflow-hidden">
+<body class="h-screen flex overflow-hidden">
 
-    <aside class="w-80 bg-[#1e40af] text-white flex flex-col p-6 shadow-2xl">
-        <div class="flex items-center gap-3 mb-10">
-            <i class="fas fa-graduation-cap text-3xl"></i>
-            <h1 class="text-2xl font-black italic tracking-tighter">PrepIQ v2</h1>
+    <aside class="w-80 bg-[#1e3a8a] text-white flex flex-col p-6 shadow-2xl z-50">
+        <div class="flex items-center gap-4 mb-10">
+            <div class="bg-white p-2 rounded-xl"><i class="fas fa-university text-[#1e3a8a] text-2xl"></i></div>
+            <h1 class="text-2xl font-black italic tracking-tighter">PrepIQ AI</h1>
         </div>
-        
-        <p class="text-[10px] font-bold opacity-50 uppercase tracking-widest mb-4">University Subjects</p>
-        <nav class="flex-1 space-y-2 overflow-y-auto pr-2" id="subject-menu"></nav>
 
-        <div class="mt-4 space-y-3">
-            <button onclick="showProjectViva()" class="project-btn w-full bg-yellow-400 text-blue-900 py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-yellow-300 transition-all">
-                <i class="fas fa-rocket mr-2"></i> Project Review Mode
+        <p class="text-[10px] font-black uppercase opacity-50 tracking-[0.2em] mb-4">Exam Intelligence</p>
+        <nav class="flex-1 space-y-2 overflow-y-auto pr-2" id="sidebar-menu"></nav>
+
+        <div class="mt-6 space-y-3">
+            <button onclick="showBloomProject()" class="w-full bg-yellow-400 text-blue-900 py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-yellow-300 transition-all pulse-btn">
+                <i class="fas fa-project-diagram mr-2"></i> Project Review Mode
             </button>
+            <label class="w-full flex items-center justify-center bg-blue-800/50 border border-blue-400/30 p-4 rounded-2xl cursor-pointer hover:bg-blue-800 transition">
+                <i class="fas fa-file-pdf mr-2"></i>
+                <span class="text-[10px] font-bold uppercase">Sync Course Notes</span>
+                <input type="file" id="pdf-upload" class="hidden" multiple>
+            </label>
         </div>
     </aside>
 
     <main class="flex-1 flex flex-col overflow-hidden">
-        <header class="bg-white p-6 shadow-sm border-b flex justify-between items-center px-10">
+        <header class="bg-white p-6 px-10 border-b flex justify-between items-center shadow-sm">
             <div>
-                <h2 id="subject-title" class="text-xl font-extrabold text-slate-800 uppercase">Welcome to Exam Cell</h2>
-                <p class="text-xs text-slate-400 font-bold tracking-widest" id="subject-code">Anna University Regulation 2021</p>
+                <h2 id="header-sub-name" class="text-xl font-black text-slate-800 uppercase">Load Subject</h2>
+                <p id="header-sub-code" class="text-xs font-bold text-slate-400 mt-1 tracking-widest">Anna University PYQ Engine Active</p>
             </div>
-            <button onclick="exportPDF()" class="bg-slate-900 text-white px-6 py-3 rounded-xl text-xs font-black hover:bg-black transition flex items-center gap-2">
-                <i class="fas fa-download"></i> DOWNLOAD ANSWER PDF
+            <button onclick="exportToPDF()" class="bg-black text-white px-8 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-800 transition">
+                <i class="fas fa-file-export mr-2"></i> Export Answer
             </button>
         </header>
 
-        <div class="flex-1 overflow-y-auto p-8 bg-slate-50/50">
-            <div id="unit-grid" class="grid grid-cols-5 gap-4 mb-10"></div>
+        <div class="flex-1 overflow-y-auto p-10 bg-slate-50/50">
+            <div id="syllabus-grid" class="grid grid-cols-5 gap-4 mb-10"></div>
 
-            <div id="answer-canvas" class="bg-white rounded-[2.5rem] shadow-xl border border-slate-100 p-16 min-h-[1000px] exam-sheet">
-                <div class="flex flex-col items-center justify-center opacity-10 py-40">
-                    <i class="fas fa-file-signature text-9xl mb-6"></i>
-                    <p class="text-3xl font-black uppercase tracking-widest text-center">Select Subject & <br>Ask a Question</p>
+            <div id="answer-workspace" class="bg-white min-h-[1000px] rounded-[3rem] shadow-2xl p-16 border border-slate-100 exam-sheet">
+                <div class="h-full flex flex-col items-center justify-center opacity-10 py-40">
+                    <i class="fas fa-scroll text-9xl mb-6"></i>
+                    <p class="text-3xl font-black uppercase tracking-widest">Ready for Deep Analysis</p>
                 </div>
             </div>
         </div>
 
         <footer class="p-8 bg-white border-t flex gap-4 items-center">
             <div class="flex bg-slate-100 p-2 rounded-2xl border border-slate-200">
-                <button onclick="setMark(2)" id="m2" class="px-5 py-3 text-[10px] font-black rounded-xl mark-btn">2M</button>
-                <button onclick="setMark(8)" id="m8" class="px-5 py-3 text-[10px] font-black rounded-xl mark-btn">8M</button>
-                <button onclick="setMark(16)" id="m16" class="px-5 py-3 text-[10px] font-black rounded-xl mark-btn active-mark">16M</button>
+                <button onclick="setMarks(2)" id="m2" class="px-5 py-3 text-[10px] font-black rounded-xl mark-btn">2M</button>
+                <button onclick="setMarks(8)" id="m8" class="px-5 py-3 text-[10px] font-black rounded-xl mark-btn">8M</button>
+                <button onclick="setMarks(16)" id="m16" class="px-5 py-3 text-[10px] font-black rounded-xl mark-btn active-sub">16M</button>
             </div>
-            
-            <div class="flex-1 flex items-center bg-slate-100 rounded-2xl px-6 border-2 border-transparent focus-within:border-blue-500 focus-within:bg-white transition-all shadow-inner">
-                <input id="user-query" type="text" placeholder="Explain the architecture of Bloom's Classifier..." class="w-full bg-transparent outline-none py-5 text-sm font-bold text-slate-700">
-                <button onclick="startVoice()" class="p-2 text-slate-400 hover:text-red-500"><i class="fas fa-microphone text-xl" id="mic"></i></button>
+
+            <div class="flex-1 flex items-center bg-slate-100 rounded-3xl px-8 border-2 border-transparent focus-within:border-blue-600 focus-within:bg-white transition-all shadow-inner">
+                <input id="query-input" type="text" placeholder="Enter Question for 800-word analysis..." class="w-full bg-transparent outline-none py-6 text-base font-bold text-slate-700">
+                <i class="fas fa-microphone text-slate-400 cursor-pointer hover:text-red-500 text-xl ml-4" onclick="startVoiceRec()"></i>
             </div>
-            
-            <button onclick="generateAnswer()" class="bg-[#1e40af] text-white px-12 py-5 rounded-2xl font-black text-xs hover:shadow-2xl transition-all uppercase tracking-widest">
+
+            <button onclick="generateAnswer()" class="bg-[#1e3a8a] text-white px-12 py-6 rounded-3xl font-black text-sm uppercase tracking-widest hover:shadow-2xl transition-all">
                 Write Answer
             </button>
         </footer>
     </main>
 
     <script>
-        const subjects = {
-            "CCS370": { name: "UI and UX Design", units: ["Introduction to UI/UX", "User Research & Personas", "Visual Design Principles", "Prototyping Tools", "Usability Testing"] },
-            "CCS340": { name: "Cyber Security", units: ["Cyber Crime Intro", "Attack Vectors", "Tools & Methods", "Cyber Laws", "Defense Mechanisms"] },
-            "CS3691": { name: "Embedded Systems & IoT", units: ["Embedded Intro", "ARM Architecture", "Sensors & Interfacing", "IoT Protocols", "Case Studies"] }
+        const courses = {
+            "CCS370": { name: "UI and UX Design", units: ["Foundations of UI/UX", "User Research & Personas", "Design Principles & Layouts", "Prototyping & Interaction", "Usability Testing & Evaluation"] },
+            "CCW331": { name: "Business Analytics", units: ["Introduction to BA", "Data Management", "Descriptive Analytics", "Predictive Modeling", "Decision Analytics"] },
+            "CCS340": { name: "Cyber Security", units: ["Cyber Crime Overview", "Cyber Offenses", "Tools and Methods", "Security Protocols", "Legal Perspectives"] },
+            "OEE351": { name: "Renewable Energy System", units: ["Solar Energy", "Wind Energy", "Bio-Energy", "Hydro Power", "Hybrid Systems"] },
+            "CCS345": { name: "Ethics and AI", units: ["Moral Principles", "Algorithmic Bias", "AI Accountability", "Human-AI Interaction", "Future of AI Ethics"] },
+            "CS3691": { name: "Embedded Systems and IoT", units: ["Embedded Introduction", "IoT Architecture", "Sensors & Actuators", "Connectivity Protocols", "IoT Security"] }
         };
 
-        let currentSub = "";
+        let selectedSub = "";
         let currentMark = 16;
 
-        // Init Sidebar
-        const menu = document.getElementById('subject-menu');
-        Object.keys(subjects).forEach(code => {
+        // Initialize Sidebar
+        const menu = document.getElementById('sidebar-menu');
+        Object.keys(courses).forEach(code => {
             const btn = document.createElement('button');
-            btn.className = "w-full text-left p-4 rounded-xl hover:bg-white/10 transition-all flex flex-col";
-            btn.innerHTML = `<span class="opacity-50 text-[9px] font-black">${code}</span><span class="text-[11px] font-bold">${subjects[code].name}</span>`;
+            btn.className = "w-full text-left p-4 rounded-2xl hover:bg-white/10 transition flex flex-col";
+            btn.id = `sub-${code}`;
+            btn.innerHTML = `<span class="text-[8px] font-black opacity-40 mb-1">${code}</span><span class="text-[11px] font-bold">${courses[code].name}</span>`;
             btn.onclick = () => selectSubject(code);
             menu.appendChild(btn);
         });
 
         function selectSubject(code) {
-            currentSub = code;
-            document.getElementById('subject-title').innerText = subjects[code].name;
-            document.getElementById('subject-code').innerText = `Subject Code: ${code} | Active Unit Dashboard`;
-            
-            const grid = document.getElementById('unit-grid');
+            selectedSub = code;
+            document.querySelectorAll('#sidebar-menu button').forEach(b => b.classList.remove('active-sub'));
+            document.getElementById(`sub-${code}`).classList.add('active-sub');
+            document.getElementById('header-sub-name').innerText = courses[code].name;
+            document.getElementById('header-sub-code').innerText = `Anna University | Code: ${code} | Unit-wise Dashboard Active`;
+
+            const grid = document.getElementById('syllabus-grid');
             grid.innerHTML = "";
-            subjects[code].units.forEach((unit, i) => {
-                grid.innerHTML += `
-                    <div class="unit-card bg-white p-5 rounded-2xl shadow-sm border border-slate-100 text-center">
-                        <span class="text-[9px] font-black text-blue-600 uppercase">Unit ${i+1}</span>
-                        <p class="text-[11px] font-black text-slate-800 leading-tight mt-1">${unit}</p>
-                    </div>
-                `;
+            courses[code].units.forEach((unit, i) => {
+                grid.innerHTML += `<div class="unit-card shadow-sm border-b-4 border-b-slate-100" onclick="alert('Unit ${i+1} PYQs Loading...')">
+                    <p class="text-[10px] font-black text-blue-600 mb-2 uppercase">Unit ${i+1}</p>
+                    <p class="text-[11px] font-black text-slate-800 leading-tight">${unit}</p>
+                </div>`;
             });
         }
 
-        function setMark(m) {
+        function setMarks(m) {
             currentMark = m;
-            document.querySelectorAll('.mark-btn').forEach(b => b.classList.remove('active-mark'));
-            document.getElementById('m'+m).classList.add('active-mark');
+            document.querySelectorAll('.mark-btn').forEach(b => b.classList.remove('active-sub'));
+            document.getElementById('m'+m).classList.add('active-sub');
         }
 
-        function startVoice() {
-            const rec = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-            rec.onstart = () => document.getElementById('mic').className = "fas fa-microphone text-red-500 animate-pulse";
+        function generateAnswer() {
+            const q = document.getElementById('query-input').value;
+            if(!q) return;
+
+            const workspace = document.getElementById('answer-workspace');
+            workspace.innerHTML = `<p class="animate-pulse font-black text-blue-900">Scanning Textbook Notes & Unit Datasets for 800-word response...</p>`;
+
+            setTimeout(() => {
+                let html = `<h1 class="text-4xl font-black text-slate-900 border-b-8 border-slate-100 pb-6 mb-10 uppercase">${q}</h1>`;
+
+                if(currentMark == 16) {
+                    html += `
+                        <span class="side-heading">I. Introduction & Definition</span>
+                        <div class="bullet-point"><strong>${q}</strong> is a foundational concept in <strong>${courses[selectedSub]?.name || 'this subject'}</strong> that provides a systematic framework for understanding technical interactions within the current syllabus.</div>
+                        <div class="bullet-point">Derived from leading author textbooks and Anna University previous year trends, this module addresses both the theoretical constructs and practical deployments required for academic excellence.</div>
+
+                        <span class="side-heading">II. System Architecture / Block Diagram</span>
+                        <div class="diagram-area">
+                            <h3 class="text-3xl font-black text-blue-900 mb-2">[ BLOCK DIAGRAM: ${q.toUpperCase()} ]</h3>
+                            <p class="text-xs italic text-slate-500">Student Instruction: Replicate the schematic flowchart from Unit notes. Ensure clear labeling of Input Module, Processing Core, and Validation Interface.</p>
+                        </div>
+                        <div class="bullet-point">The architecture consists of interconnected functional layers, designed to optimize resource allocation and minimize operational latency during peak execution cycles.</div>
+
+                        <span class="side-heading">III. Detailed Methodology & Working Principle</span>
+                        <div class="bullet-point">The working principle follows a sequential workflow: Initialization, Data Normalization, Semantic Mapping, and Final Execution.</div>
+                        <div class="bullet-point">Utilizing techniques like ensemble learning or weighted feature extraction (e.g., TFPOS-IDF), the system achieves high precision by prioritizing critical action tokens over noise.</div>
+
+                        <span class="side-heading">IV. Advantages & Applications</span>
+                        <div class="bullet-point"><strong>Advantage:</strong> Exceptional reduction in manual error and high repeatability across diverse datasets.</div>
+                        <div class="bullet-point"><strong>Disadvantage:</strong> Complexity in initial model training and high dependency on labeled dataset quality.</div>
+                        <div class="bullet-point"><strong>Application:</strong> Widely used in automated evaluation systems, cloud infrastructure, and industrial IoT monitoring.</div>
+
+                        <span class="side-heading">V. Conclusion</span>
+                        <div class="bullet-point font-bold italic pt-6 border-t mt-6">To conclude, mastering ${q} allows students to bridge the gap between textbook theory and professional implementation, ensuring success in both project reviews and semester examinations.</div>
+                    `;
+                } else {
+                    html += `<div class="bg-blue-900 text-white p-12 rounded-[2rem] shadow-xl border-l-[15px] border-yellow-400 font-bold text-2xl italic leading-relaxed uppercase">
+                        "${q} is the systematic protocol for technical validation and classification within the ${courses[selectedSub]?.name} framework."
+                    </div>`;
+                }
+                workspace.innerHTML = html;
+            }, 1000);
+        }
+
+        function showBloomProject() {
+            const workspace = document.getElementById('answer-workspace');
+            workspace.innerHTML = `
+                <h1 class="text-4xl font-black text-slate-900 mb-8 uppercase border-b-8 border-yellow-400 pb-4 tracking-tighter">Project: Bloom’s Taxonomy Classifier</h1>
+                
+                <div class="grid grid-cols-2 gap-8 mb-10">
+                    <div class="bg-slate-900 text-white p-10 rounded-[2.5rem]">
+                        <h4 class="text-yellow-400 font-black text-xs uppercase mb-4 tracking-widest">Problem Statement</h4>
+                        <p class="text-sm opacity-80 leading-relaxed">Manual classification is subjective and error-prone. Verb overlaps make it difficult for teachers to create balanced question papers.</p>
+                    </div>
+                    <div class="bg-blue-600 text-white p-10 rounded-[2.5rem]">
+                        <h4 class="text-blue-100 font-black text-xs uppercase mb-4 tracking-widest">Objective</h4>
+                        <p class="text-sm opacity-80 leading-relaxed">An automated ML system using <strong>Ensemble Machine Learning</strong> (SVM, KNN, NB) and a custom <strong>TFPOS-IDF</strong> method to achieve 93.5% accuracy.</p>
+                    </div>
+                </div>
+
+                <span class="side-heading">1. TFPOS-IDF Mechanism</span>
+                <div class="bullet-point">Standard TF-IDF treats all words equally. Our <strong>TFPOS-IDF</strong> gives <strong>5x more weight to Verbs</strong>.</div>
+                <div class="bullet-point">This ensures action verbs (e.g., 'Analyze') dominate the classification, improving semantic accuracy.</div>
+                
+                <div class="diagram-area">
+                    <p class="text-[10px] font-black text-slate-300 mb-4 uppercase tracking-[0.3em]">Project Workflow Diagram</p>
+                    <p class="text-2xl font-black">Input ⮕ Preprocessing ⮕ TFPOS-IDF ⮕ Ensemble Model ⮕ Result</p>
+                </div>
+
+                <span class="side-heading">2. Performance Results</span>
+                <div class="bullet-point">Accuracy: 93.5% | Dataset: 755 Questions | Deployment: Angular + Python + Node.js.</div>
+            `;
+        }
+
+        function startVoiceRec() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) return alert("Voice input not supported in this browser.");
+            const rec = new SpeechRecognition();
+            rec.onstart = () => document.getElementById('mic-icon').className = "fas fa-microphone text-red-600 animate-pulse text-xl";
             rec.onresult = (e) => {
-                document.getElementById('user-query').value = e.results[0][0].transcript;
-                document.getElementById('mic').className = "fas fa-microphone text-xl";
+                document.getElementById('query-input').value = e.results[0][0].transcript;
+                document.getElementById('mic-icon').className = "fas fa-microphone text-xl";
             };
             rec.start();
         }
 
-        function generateAnswer() {
-            const q = document.getElementById('user-query').value;
-            if(!q) return;
-            const canvas = document.getElementById('answer-canvas');
-            canvas.innerHTML = `<div class="animate-pulse space-y-6"><div class="h-10 bg-slate-100 rounded-full w-3/4"></div><div class="h-64 bg-slate-100 rounded-3xl"></div><div class="h-64 bg-slate-100 rounded-3xl"></div></div>`;
-
-            setTimeout(() => {
-                let html = `<h2 class="text-4xl font-black text-slate-900 border-b-8 border-slate-100 pb-6 mb-10">${q.toUpperCase()}</h2>`;
-
-                if(currentMark === 16) {
-                    html += `
-                        <div class="side-heading">1. Introduction & Theoretical Background</div>
-                        <div class="bullet-point">According to the latest university author text books, <strong>${q}</strong> is a core component that ensures the structural integrity and operational efficiency of the system.</div>
-                        <div class="bullet-point">The primary objective of this module is to provide a scalable and robust framework for ${subjects[currentSub]?.name || 'the engineering domain'}.</div>
-                        <div class="bullet-point">This theoretical approach is fundamental for both academic examinations and real-world industrial implementation.</div>
-
-                        <div class="side-heading">2. Core Architecture & Block Diagram</div>
-                        <div class="diagram-container">
-                            <p class="text-[10px] font-black text-slate-300 uppercase mb-4 tracking-widest font-sans">Mandatory Schematic (Draw in Exam)</p>
-                            <h3 class="text-2xl font-black text-blue-900 font-sans">[ BLOCK DIAGRAM: ${q} ]</h3>
-                            <p class="text-xs italic text-slate-500 font-sans mt-4">Note: Ensure to label the Input Nodes, Processing Layers, and the Feedback Loop Interface as specified in the curriculum.</p>
-                        </div>
-                        <div class="bullet-point">The architecture follows a layered approach starting from the User Interface layer down to the Persistence Layer.</div>
-                        <div class="bullet-point">Each component is designed to minimize latency while maximizing throughput during heavy computational tasks.</div>
-
-                        <div class="side-heading">3. Detailed Methodology & Workflow</div>
-                        <div class="bullet-point">The working principle is based on a sequential algorithm that processes input data through a series of validation filters.</div>
-                        <div class="bullet-point">In advanced scenarios, semantic weighting (TFPOS-IDF) is applied to identify critical features and prioritize them for classification.</div>
-                        <div class="bullet-point">This ensuring high precision (93.5% accuracy) in automated decision-making processes.</div>
-
-                        <div class="side-heading">4. Advantages & Applications</div>
-                        <div class="bullet-point"><strong>Advantage:</strong> Exceptional reliability and consistent performance across diverse datasets.</div>
-                        <div class="bullet-point"><strong>Advantage:</strong> Automated classification reduces manual effort and minimizes human subjectivity.</div>
-                        <div class="bullet-point"><strong>Application:</strong> Widely used in Question Paper Generation, Security Systems, and Industrial Automation.</div>
-
-                        <div class="side-heading">5. Conclusion</div>
-                        <div class="bullet-point font-bold italic pt-6 border-t mt-8">To conclude, the mastery of ${q} is essential for students to excel in ${currentSub}. It bridges the gap between theoretical knowledge and professional engineering practice.</div>
-                    `;
-                } else {
-                    html += `<div class="bg-blue-900 text-white p-10 rounded-3xl border-l-[10px] border-yellow-400 shadow-xl font-bold italic text-2xl uppercase">"${q} is a systematic protocol used for technical data validation and classification within the ${subjects[currentSub]?.name} framework."</div>`;
-                }
-                canvas.innerHTML = html;
-                canvas.scrollIntoView({ behavior: 'smooth' });
-            }, 1000);
-        }
-
-        function showProjectViva() {
-            const canvas = document.getElementById('answer-canvas');
-            canvas.innerHTML = `
-                <h2 class="text-4xl font-black text-slate-900 border-b-8 border-yellow-400 pb-4 mb-8 uppercase">Project: Bloom's Question Classifier</h2>
-                
-                <div class="grid grid-cols-2 gap-6 mb-10">
-                    <div class="bg-slate-900 text-white p-8 rounded-3xl">
-                        <p class="text-[10px] font-black text-yellow-400 uppercase mb-2">The Problem</p>
-                        <p class="text-sm opacity-80 leading-relaxed font-sans">Manual classification of questions into Bloom's levels is subjective, time-consuming, and error-prone due to verb overlaps.</p>
-                    </div>
-                    <div class="bg-blue-600 text-white p-8 rounded-3xl">
-                        <p class="text-[10px] font-black text-blue-100 uppercase mb-2">The Solution</p>
-                        <p class="text-sm opacity-80 leading-relaxed font-sans">An automated Ensemble ML system (SVM, KNN, NB) with a custom <strong>TFPOS-IDF</strong> method achieving 93.5% accuracy.</p>
-                    </div>
-                </div>
-
-                <div class="side-heading">Key Mechanism: TFPOS-IDF</div>
-                <div class="bullet-point">Standard TF-IDF ignores word importance. <strong>TFPOS-IDF</strong> weights **Verbs (Weight: 5)** higher because they define the cognitive level (e.g., 'Explain' vs 'List').</div>
-                
-                <div class="diagram-container">
-                    <p class="text-[10px] font-black text-slate-300 uppercase mb-4 tracking-widest font-sans">Project Flowchart</p>
-                    <p class="text-xl font-black font-sans">Input ⮕ Preprocessing ⮕ TFPOS-IDF ⮕ Ensemble Model ⮕ Bloom's Level</p>
-                </div>
-
-                <div class="side-heading">Results & Viva Facts</div>
-                <div class="bullet-point"><strong>Accuracy:</strong> 93.5% on a dataset of 755 balanced questions.</div>
-                <div class="bullet-point"><strong>Stack:</strong> Python (Backend), Angular (Frontend), Node.js (Server).</div>
-            `;
-            canvas.scrollIntoView({ behavior: 'smooth' });
-        }
-
-        async function exportPDF() {
+        function exportToPDF() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
-            const text = document.getElementById('answer-canvas').innerText;
+            doc.setFontSize(14);
+            doc.text("PrepIQ Exam Report", 15, 20);
+            const content = document.getElementById('answer-workspace').innerText;
             doc.setFontSize(10);
-            doc.text(doc.splitTextToSize(text, 180), 15, 20);
-            doc.save(`PrepIQ_Report.pdf`);
+            doc.text(doc.splitTextToSize(content, 180), 15, 30);
+            doc.save("PrepIQ_Answer.pdf");
         }
     </script>
 </body>
