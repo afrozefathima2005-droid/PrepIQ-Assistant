@@ -3,83 +3,87 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PrepBot IQ - Real Content Generator</title>
+    <title>PrepIQ - Exam Answer Mode</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        .active-sub { background: #1e40af; color: white; border-radius: 12px; }
-        .mark-active { background: #1e40af; color: white; box-shadow: 0 4px 12px rgba(30, 64, 175, 0.4); }
-        .answer-box { line-height: 1.8; text-align: justify; white-space: pre-line; }
-        .ans-heading { color: #1e40af; font-weight: 800; border-bottom: 2px solid #e2e8f0; padding-bottom: 5px; margin-top: 20px; }
+        .active-sub { background: #1e40af; color: white; border-radius: 8px; font-weight: bold; }
+        .mark-active { background: #1e40af; color: white; transform: scale(1.05); box-shadow: 0 5px 15px rgba(30,64,175,0.3); }
+        .exam-paper { font-family: 'Georgia', serif; line-height: 1.8; color: #1a202c; text-align: justify; }
+        .side-heading { font-weight: 800; color: #2d3748; text-decoration: underline; margin-top: 20px; display: block; text-transform: uppercase; font-size: 0.9rem; }
+        .highlight-box { border-left: 5px solid #1e40af; padding: 15px; background: #f8fafc; margin: 15px 0; font-style: italic; }
     </style>
 </head>
-<body class="bg-slate-50 font-sans">
+<body class="bg-gray-100 min-h-screen">
 
-    <nav class="bg-[#1e40af] text-white p-4 px-10 flex justify-between items-center shadow-lg">
+    <nav class="bg-[#1e40af] text-white p-4 shadow-lg flex justify-between items-center px-10 sticky top-0 z-50">
         <div class="flex items-center gap-3">
-            <i class="fas fa-university text-2xl"></i>
-            <h1 class="text-xl font-black">PrepBot IQ <span class="text-xs font-light">| Exam Ready</span></h1>
+            <i class="fas fa-edit text-2xl"></i>
+            <h1 class="text-xl font-black tracking-tight">PrepIQ Exam Engine</h1>
         </div>
-        <div id="pdf-status" class="text-[10px] font-bold bg-red-600 px-4 py-1 rounded-full uppercase">No Dataset Uploaded</div>
+        <div id="status" class="text-[10px] font-bold bg-white text-blue-800 px-3 py-1 rounded-full border border-blue-200 uppercase">
+            Upload PDF to Sync Knowledge
+        </div>
     </nav>
 
     <main class="container mx-auto mt-6 grid grid-cols-12 gap-6 p-4">
         
         <div class="col-span-3 space-y-4">
-            <div class="bg-white p-5 rounded-2xl shadow-sm border">
-                <p class="text-[10px] font-black text-slate-400 uppercase mb-3 tracking-widest">Select Subject</p>
+            <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
+                <p class="text-[10px] font-bold text-gray-400 uppercase mb-3">Course Code</p>
                 <div class="space-y-1" id="sub-list">
-                    <button onclick="setSub('CCS340')" class="w-full text-left p-3 text-sm active-sub font-bold">Cyber Security (CCS340)</button>
-                    <button onclick="setSub('CS3691')" class="w-full text-left p-3 text-sm border-b">Embedded & IoT (CS3691)</button>
+                    <button onclick="changeSub('CCS340')" class="w-full text-left p-3 text-sm active-sub">Cyber Security (CCS340)</button>
+                    <button onclick="changeSub('CS3691')" class="w-full text-left p-3 text-sm border-b">Embedded & IoT (CS3691)</button>
+                    <button onclick="changeSub('CCW331')" class="w-full text-left p-3 text-sm border-b">Business Analytics (CCW331)</button>
                 </div>
             </div>
 
-            <div class="bg-white p-5 rounded-2xl shadow-sm border">
-                <p class="text-[10px] font-black text-slate-400 uppercase mb-3 tracking-widest">Target Marks</p>
+            <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
+                <p class="text-[10px] font-bold text-gray-400 uppercase mb-3">Target Marks</p>
                 <div class="flex gap-2">
-                    <button onclick="setMark(2)" id="m2" class="flex-1 border-2 py-2 rounded-xl text-xs font-bold">2M</button>
-                    <button onclick="setMark(8)" id="m8" class="flex-1 border-2 py-2 rounded-xl text-xs font-bold">8M</button>
-                    <button onclick="setMark(16)" id="m16" class="flex-1 border-2 py-2 rounded-xl text-xs font-bold mark-active">16M</button>
+                    <button onclick="setMarks(2)" id="m2" class="flex-1 border py-2 rounded-lg text-xs font-bold">2M</button>
+                    <button onclick="setMarks(8)" id="m8" class="flex-1 border py-2 rounded-lg text-xs font-bold">8M</button>
+                    <button onclick="setMarks(16)" id="m16" class="flex-1 border py-2 rounded-lg text-xs font-bold mark-active">16M</button>
                 </div>
             </div>
 
-            <div class="bg-white p-6 rounded-2xl shadow-sm border text-center">
-                <label class="cursor-pointer block border-2 border-dashed border-blue-200 bg-blue-50 p-6 rounded-xl hover:bg-blue-100 transition">
-                    <i class="fas fa-file-pdf text-3xl text-blue-600 mb-2"></i>
-                    <p class="text-[10px] font-black uppercase text-blue-900 leading-tight">Click to Upload PDF</p>
-                    <input type="file" id="pdf-file" class="hidden" accept="application/pdf" multiple>
+            <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
+                <label class="cursor-pointer block text-center p-6 border-2 border-dashed border-blue-100 bg-blue-50 rounded-xl hover:bg-blue-100">
+                    <i class="fas fa-upload text-blue-600 mb-2"></i>
+                    <p class="text-[11px] font-bold uppercase text-blue-900">Upload Unit PDFs</p>
+                    <input type="file" id="pdf-input" class="hidden" accept="application/pdf" multiple>
                 </label>
             </div>
         </div>
 
-        <div class="col-span-9 flex flex-col h-[800px] bg-white rounded-3xl shadow-xl border overflow-hidden">
-            <div id="output" class="flex-1 overflow-y-auto p-12 answer-box bg-white">
-                <div id="placeholder" class="h-full flex flex-col items-center justify-center opacity-30">
-                    <i class="fas fa-search-plus text-7xl mb-4"></i>
-                    <p class="text-xl font-bold italic">Upload your unit notes and type question below.</p>
+        <div class="col-span-9 flex flex-col h-[850px] bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden">
+            <div id="answer-sheet" class="flex-1 overflow-y-auto p-12 exam-paper">
+                <div id="empty-hint" class="h-full flex flex-col items-center justify-center text-gray-300">
+                    <i class="fas fa-pen-alt text-7xl mb-4"></i>
+                    <p class="text-xl font-bold uppercase tracking-widest">Question Paper Ready</p>
                 </div>
-                <div id="actual-content" class="hidden animate-in fade-in duration-500"></div>
+                <div id="exam-output" class="hidden"></div>
             </div>
 
-            <div class="p-6 bg-slate-50 border-t flex gap-4">
-                <input id="q-input" type="text" placeholder="Type your exam question (e.g. Discuss Cyber Crimes Classification)..." class="flex-1 bg-white border-2 rounded-2xl px-6 py-4 outline-none focus:border-blue-500 shadow-sm text-sm font-medium">
-                <button onclick="fetchAnswer()" class="bg-[#1e40af] text-white px-10 py-4 rounded-2xl font-black text-xs hover:bg-blue-800 transition shadow-lg">GENERATE ANSWER</button>
+            <div class="p-6 bg-gray-50 border-t flex gap-4">
+                <input id="user-q" type="text" placeholder="Enter question (e.g., Explain symmetric key cryptography)..." class="flex-1 bg-white border rounded-xl px-6 py-4 outline-none focus:ring-2 focus:ring-blue-500 text-sm shadow-inner">
+                <button onclick="writeAnswer()" class="bg-[#1e40af] text-white px-10 py-4 rounded-xl font-black text-sm hover:shadow-xl transition-all">GENERATE ANSWER</button>
             </div>
         </div>
     </main>
 
     <script>
-        let knowledgeText = "";
-        let marks = 16;
-        let subCode = "CCS340";
+        let pdfDatabase = "";
+        let selectedM = 16;
+        let selectedS = "CCS340";
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
 
-        // 1. PDF Content Extraction Logic
-        document.getElementById('pdf-file').addEventListener('change', async (e) => {
+        // Load PDF Data
+        document.getElementById('pdf-input').addEventListener('change', async (e) => {
             const files = e.target.files;
-            knowledgeText = "";
-            document.getElementById('pdf-status').innerText = "Reading PDF...";
+            pdfDatabase = "";
+            document.getElementById('status').innerText = "Reading PDFs...";
             
             for(let f of files) {
                 const buffer = await f.arrayBuffer();
@@ -87,81 +91,83 @@
                 for(let i=1; i<=pdf.numPages; i++) {
                     const page = await pdf.getPage(i);
                     const content = await page.getTextContent();
-                    knowledgeText += content.items.map(s => s.str).join(" ") + "\n";
+                    pdfDatabase += content.items.map(s => s.str).join(" ") + " ";
                 }
             }
-            document.getElementById('pdf-status').className = "text-[10px] font-bold bg-green-600 px-4 py-1 rounded-full uppercase";
-            document.getElementById('pdf-status').innerText = "Notes Synced Successfully";
+            document.getElementById('status').className = "text-[10px] font-bold bg-green-500 text-white px-3 py-1 rounded-full uppercase";
+            document.getElementById('status').innerText = "Knowledge Synced";
         });
 
-        function setMark(m) {
-            marks = m;
+        function setMarks(m) {
+            selectedM = m;
             [2, 8, 16].forEach(v => document.getElementById('m'+v).classList.toggle('mark-active', v === m));
         }
 
-        function setSub(s) {
-            subCode = s;
+        function changeSub(s) {
+            selectedS = s;
             document.querySelectorAll('#sub-list button').forEach(b => b.classList.toggle('active-sub', b.innerText.includes(s)));
         }
 
-        // 2. Real Content Filter & Answer Formatter
-        function fetchAnswer() {
-            const q = document.getElementById('q-input').value.toLowerCase();
-            if(!q || !knowledgeText) { alert("Please upload PDF and type question!"); return; }
+        function writeAnswer() {
+            const q = document.getElementById('user-q').value;
+            if(!q || !pdfDatabase) { alert("Upload PDF first!"); return; }
 
-            document.getElementById('placeholder').classList.add('hidden');
-            const target = document.getElementById('actual-content');
+            document.getElementById('empty-hint').classList.add('hidden');
+            const target = document.getElementById('exam-output');
             target.classList.remove('hidden');
-            target.innerHTML = `<p class="text-blue-600 animate-pulse font-bold">Fetching real content from your notes...</p>`;
+            target.innerHTML = `<p class="animate-pulse font-bold text-blue-800">Searching unit notes and writing answer...</p>`;
 
             setTimeout(() => {
-                // Simplified content matching logic
-                const words = q.split(" ");
-                let relevantSentences = knowledgeText.split(/[.!?]/).filter(s => 
-                    words.some(w => w.length > 3 && s.toLowerCase().includes(w))
-                );
+                // Find real content snippets based on keywords
+                const sentences = pdfDatabase.split(/[.!?]/).filter(s => s.trim().length > 10);
+                const queryWords = q.toLowerCase().split(" ");
+                let foundSentences = sentences.filter(s => queryWords.some(w => w.length > 4 && s.toLowerCase().includes(w)));
+                
+                // If no exact match, use context sentences
+                if(foundSentences.length < 5) foundSentences = sentences.slice(0, 30);
 
-                // If no direct match, take chunks
-                if(relevantSentences.length < 5) relevantSentences = knowledgeText.split("\n").slice(0, 50);
+                let content = `<h2 class="text-3xl font-black text-blue-900 border-b-4 border-blue-900 pb-2 mb-8">${q.toUpperCase()}</h2>`;
 
-                let header = `<h2 class="text-3xl font-black text-slate-800 mb-6 uppercase border-b-4 border-blue-100 pb-2">${q}</h2>`;
-                let body = "";
-
-                if(marks == 2) {
-                    body = `<div class="bg-blue-50 p-6 rounded-2xl border-l-8 border-blue-600">
-                        <p class="font-bold text-slate-800">${relevantSentences.slice(0, 3).join(". ")}.</p>
+                if(selectedM == 2) {
+                    content += `<div class="highlight-box">
+                        <strong>Answer:</strong> ${foundSentences.slice(0, 3).join(". ")}.
                     </div>`;
-                } 
-                else if(marks == 8) {
-                    body = `
-                        <h4 class="ans-heading">I. Introduction</h4>
-                        <p>${relevantSentences.slice(0, 4).join(". ")}.</p>
-                        <h4 class="ans-heading">II. Core Classification / Principles</h4>
-                        <p>${relevantSentences.slice(4, 12).join(". ")}.</p>
-                        <h4 class="ans-heading">III. Key Summary</h4>
-                        <p>${relevantSentences.slice(12, 15).join(". ")}.</p>`;
-                } 
-                else {
-                    body = `
-                        <div class="bg-slate-900 text-white p-10 rounded-3xl mb-8 shadow-xl">
-                            <h4 class="text-blue-400 font-bold uppercase tracking-widest text-xs mb-3 underline">I. Comprehensive Essay Detail</h4>
-                            <p class="text-lg opacity-90">${relevantSentences.slice(0, 6).join(". ")}.</p>
+                } else if(selectedM == 8) {
+                    content += `
+                        <span class="side-heading">1. Introduction</span>
+                        <p>${foundSentences.slice(0, 4).join(". ")}.</p>
+                        
+                        <span class="side-heading">2. Detailed Explanation</span>
+                        <p>${foundSentences.slice(4, 12).join(". ")}.</p>
+                        
+                        <span class="side-heading">3. Key Points & Applications</span>
+                        <ul class="list-disc pl-5 mt-4 space-y-2">
+                            <li>${foundSentences[12] || "Point 1: Discussed in unit notes"}</li>
+                            <li>${foundSentences[13] || "Point 2: Technical implementation"}</li>
+                            <li>${foundSentences[14] || "Point 3: Standard protocols"}</li>
+                        </ul>`;
+                } else {
+                    content += `
+                        <span class="side-heading">I. Introduction & Theoretical Background</span>
+                        <p>${foundSentences.slice(0, 6).join(". ")}.</p>
+                        
+                        <span class="side-heading">II. Core Mechanism and Detailed Working</span>
+                        <p>${foundSentences.slice(6, 18).join(". ")}.</p>
+                        
+                        <div class="my-10 p-10 border-4 border-double border-gray-300 bg-gray-50 text-center">
+                            <p class="font-black text-xs uppercase tracking-widest text-gray-500 mb-2">Technical Diagram Requirement</p>
+                            <div class="text-2xl font-serif text-blue-900 italic">[Diagram: ${q}]</div>
+                            <p class="text-[10px] mt-2 italic">Student Note: Please draw the schematic found in Unit 2 for ${selectedS}.</p>
                         </div>
-                        <h4 class="ans-heading">II. Technical Working & Mechanism</h4>
-                        <p>${relevantSentences.slice(6, 18).join(". ")}.</p>
-                        <div class="my-10 p-12 bg-slate-50 border-4 border-dashed border-slate-200 rounded-[3rem] text-center">
-                            <p class="text-slate-400 font-black text-xs uppercase underline mb-2">University Exam Diagram Area</p>
-                            <p class="text-xl font-serif text-blue-900 italic">Diagram: ${q.toUpperCase()}</p>
-                            <p class="text-[10px] text-slate-400 mt-2">Instruction: Replicate the schematic from your Unit ${subCode} Notes.</p>
-                        </div>
-                        <h4 class="ans-heading">III. Detailed Classification & Impacts</h4>
-                        <p>${relevantSentences.slice(18, 30).join(". ")}.</p>
-                        <div class="mt-8 bg-green-50 p-6 rounded-2xl border border-green-200">
-                            <h4 class="text-green-800 font-bold">IV. Conclusion</h4>
-                            <p class="text-sm text-green-700 italic">${relevantSentences.slice(30, 35).join(". ")}.</p>
-                        </div>`;
+                        
+                        <span class="side-heading">III. Features and Classification</span>
+                        <p>${foundSentences.slice(18, 30).join(". ")}.</p>
+                        
+                        <span class="side-heading">IV. Conclusion</span>
+                        <p class="italic text-gray-600">${foundSentences.slice(30, 34).join(". ")}.</p>`;
                 }
-                target.innerHTML = header + body;
+                target.innerHTML = content;
+                window.scrollBy({ top: 200, behavior: 'smooth' });
             }, 1000);
         }
     </script>
