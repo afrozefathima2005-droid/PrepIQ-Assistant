@@ -3,167 +3,210 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PrepIQ - Structured Exam Mode</title>
+    <title>PrepIQ - Advanced Exam Cell</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-        body { font-family: 'Inter', sans-serif; }
-        .active-sub { background: #1e40af; color: white; border-radius: 8px; font-weight: bold; }
-        .mark-active { background: #1e40af; color: white; transform: scale(1.05); }
-        .sub-topic { color: #1e40af; font-weight: 800; text-transform: uppercase; font-size: 0.9rem; margin-top: 25px; display: block; border-bottom: 2px solid #e2e8f0; padding-bottom: 4px; margin-bottom: 12px; }
-        .bullet-point { position: relative; padding-left: 25px; margin-bottom: 10px; line-height: 1.6; color: #334155; }
-        .bullet-point::before { content: "•"; position: absolute; left: 0; color: #1e40af; font-weight: bold; font-size: 1.2rem; }
-        .diagram-box { border: 2px dashed #cbd5e1; background: #f8fafc; padding: 30px; margin: 25px 0; text-align: center; border-radius: 15px; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+        body { font-family: 'Inter', sans-serif; background: #f3f4f6; }
+        .unit-card { transition: all 0.3s ease; cursor: pointer; border: 2px solid transparent; }
+        .unit-card:hover { transform: translateY(-5px); border-color: #3b82f6; background: #eff6ff; }
+        .side-heading { color: #1e40af; font-weight: 800; text-transform: uppercase; border-left: 5px solid #1e40af; padding-left: 10px; margin: 20px 0 10px; }
+        .bullet-point { margin-bottom: 8px; position: relative; padding-left: 20px; }
+        .bullet-point::before { content: "•"; position: absolute; left: 0; color: #3b82f6; font-weight: bold; }
+        .pulse-loader { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
     </style>
 </head>
-<body class="bg-slate-50">
+<body>
 
-    <nav class="bg-[#1e40af] text-white p-4 px-10 flex justify-between items-center shadow-lg">
-        <div class="flex items-center gap-3">
-            <i class="fas fa-list-check text-2xl"></i>
-            <h1 class="text-xl font-black uppercase tracking-tighter">PrepIQ <span class="font-light tracking-normal italic text-sm">Bullet-Point Mode</span></h1>
-        </div>
-        <div id="pdf-notif" class="text-[10px] font-black bg-white/20 px-4 py-1 rounded-full uppercase border border-white/30">PDF Required</div>
-    </nav>
-
-    <main class="container mx-auto mt-6 grid grid-cols-12 gap-6 p-4">
-        
-        <div class="col-span-3 space-y-4">
-            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-                <p class="text-[10px] font-black text-slate-400 uppercase mb-4 tracking-widest">Course</p>
-                <div class="space-y-1" id="sub-list">
-                    <button onclick="changeSub('CCS340')" class="w-full text-left p-3 text-sm active-sub transition-all">Cyber Security (CCS340)</button>
-                    <button onclick="changeSub('CS3691')" class="w-full text-left p-3 text-sm border-b">Embedded & IoT (CS3691)</button>
-                </div>
+    <div class="flex h-screen overflow-hidden">
+        <aside class="w-72 bg-[#1e40af] text-white flex flex-col p-6 shadow-2xl">
+            <div class="flex items-center gap-3 mb-10">
+                <i class="fas fa-brain text-3xl"></i>
+                <h1 class="text-2xl font-black italic">PrepIQ</h1>
             </div>
+            
+            <p class="text-[10px] font-bold opacity-50 uppercase tracking-widest mb-4">Select Subject</p>
+            <nav class="space-y-2 overflow-y-auto pr-2" id="subject-menu">
+                </nav>
 
-            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-                <p class="text-[10px] font-black text-slate-400 uppercase mb-4 tracking-widest">Marks Scheme</p>
-                <div class="grid grid-cols-3 gap-2">
-                    <button onclick="setMarks(2)" id="m2" class="border-2 py-2 rounded-xl text-xs font-black">2M</button>
-                    <button onclick="setMarks(8)" id="m8" class="border-2 py-2 rounded-xl text-xs font-black">8M</button>
-                    <button onclick="setMarks(16)" id="m16" class="border-2 py-2 rounded-xl text-xs font-black mark-active">16M</button>
-                </div>
-            </div>
-
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                <label class="cursor-pointer block text-center p-6 border-2 border-dashed border-blue-100 bg-blue-50/50 rounded-xl hover:bg-blue-100 transition-all">
-                    <i class="fas fa-file-pdf text-3xl text-blue-500 mb-2"></i>
-                    <p class="text-[10px] font-black text-blue-900 uppercase">Upload Bulk PDF</p>
-                    <input type="file" id="pdf-loader" class="hidden" accept="application/pdf" multiple>
+            <div class="mt-auto p-4 bg-blue-800/50 rounded-2xl border border-blue-400/30">
+                <label class="cursor-pointer flex flex-col items-center">
+                    <i class="fas fa-cloud-upload-alt text-2xl mb-2"></i>
+                    <span class="text-[10px] font-bold uppercase">Upload Unit Notes</span>
+                    <input type="file" id="pdf-upload" class="hidden" multiple>
                 </label>
             </div>
-        </div>
+        </aside>
 
-        <div class="col-span-9 flex flex-col h-[850px] bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden">
-            <div id="paper-view" class="flex-1 overflow-y-auto p-12">
-                <div id="intro-placeholder" class="h-full flex flex-col items-center justify-center text-slate-200">
-                    <i class="fas fa-list-ol text-8xl mb-4"></i>
-                    <p class="text-xl font-black uppercase tracking-widest opacity-30">Answer Sheet Empty</p>
+        <main class="flex-1 flex flex-col overflow-hidden">
+            <header class="bg-white p-6 shadow-sm border-b flex justify-between items-center px-10">
+                <div>
+                    <h2 id="current-subject-title" class="text-xl font-extrabold text-slate-800 uppercase">Select a Subject to start</h2>
+                    <p class="text-xs text-slate-400 font-semibold" id="subject-code-display">---</p>
                 </div>
-                <div id="real-content" class="hidden animate-in fade-in duration-500"></div>
+                <div class="flex gap-4">
+                    <button onclick="exportToPDF()" class="bg-slate-800 text-white px-5 py-2 rounded-xl text-xs font-bold hover:bg-black transition flex items-center gap-2">
+                        <i class="fas fa-file-pdf"></i> EXPORT PDF
+                    </button>
+                    <div class="bg-green-100 text-green-700 text-[10px] font-black px-4 py-2 rounded-full border border-green-200 uppercase tracking-tighter">
+                        <i class="fas fa-check-circle mr-1"></i> System Online
+                    </div>
+                </div>
+            </header>
+
+            <div class="flex-1 overflow-y-auto p-8 space-y-8 bg-slate-50/50">
+                <section>
+                    <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-6">Course Syllabus (Units)</h3>
+                    <div id="unit-grid" class="grid grid-cols-5 gap-4">
+                        </div>
+                </section>
+
+                <section class="bg-white rounded-[2rem] shadow-xl border border-slate-100 p-10 min-h-[500px]">
+                    <div id="answer-box">
+                        <div class="flex flex-col items-center justify-center h-full opacity-20 py-20">
+                            <i class="fas fa-scroll text-8xl mb-4"></i>
+                            <p class="text-xl font-bold italic tracking-tighter">Ask a question to generate exam-ready content</p>
+                        </div>
+                    </div>
+                </section>
             </div>
 
-            <div class="p-8 bg-slate-50 border-t flex gap-4">
-                <input id="query-box" type="text" placeholder="Explain RSA Algorithm / Types of Cyber Crimes..." class="flex-1 bg-white border-2 rounded-2xl px-6 py-4 outline-none focus:border-blue-500 text-sm font-bold shadow-sm">
-                <button onclick="generateBulletAnswer()" class="bg-[#1e40af] text-white px-10 py-4 rounded-2xl font-black text-xs hover:bg-blue-800 transition-all active:scale-95 shadow-lg">GENERATE POINTS</button>
-            </div>
-        </div>
-    </main>
+            <footer class="p-6 bg-white border-t flex gap-4 items-center">
+                <div class="flex gap-2">
+                    <button onclick="setMark(2)" id="m2" class="px-4 py-2 border-2 rounded-xl text-[10px] font-bold mark-btn">2M</button>
+                    <button onclick="setMark(8)" id="m8" class="px-4 py-2 border-2 rounded-xl text-[10px] font-bold mark-btn">8M</button>
+                    <button onclick="setMark(16)" id="m16" class="px-4 py-2 border-2 rounded-xl text-[10px] font-bold mark-btn bg-blue-600 text-white">16M</button>
+                </div>
+                <div class="flex-1 flex items-center bg-slate-100 rounded-2xl px-6 border-2 border-transparent focus-within:border-blue-500 focus-within:bg-white transition-all shadow-inner">
+                    <input id="user-input" type="text" placeholder="Type a topic (e.g., RSA Algorithm, User Personas)..." class="w-full bg-transparent outline-none py-4 text-sm font-semibold text-slate-700">
+                    <button onclick="startVoice()" class="p-2 text-slate-400 hover:text-red-500 transition">
+                        <i class="fas fa-microphone text-xl" id="mic-icon"></i>
+                    </button>
+                </div>
+                <button onclick="generateContent()" class="bg-[#1e40af] text-white px-10 py-4 rounded-2xl font-black text-xs hover:shadow-2xl transition-all uppercase tracking-widest">Generate</button>
+            </footer>
+        </main>
+    </div>
 
     <script>
-        let fullText = "";
-        let marks = 16;
-        let subject = "CCS340";
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+        const subjects = {
+            "CCS370": { name: "UI and UX Design", units: ["Foundations of UI/UX", "User Research & Personas", "Design Principles & Layouts", "Prototyping & Interaction", "Usability Testing & Evaluation"] },
+            "CCW331": { name: "Business Analytics", units: ["Introduction to BA", "Data Management", "Descriptive Analytics", "Predictive Modeling", "Decision Analytics"] },
+            "CCS340": { name: "Cyber Security", units: ["Cyber Crime Overview", "Cyber Offenses", "Tools and Methods", "Security Protocols", "Legal Perspectives"] },
+            "OEE351": { name: "Renewable Energy System", units: ["Solar Energy", "Wind Energy", "Bio-Energy", "Hydro Power", "Hybrid Systems"] },
+            "CCS345": { name: "Ethics and AI", units: ["Moral Principles", "Algorithmic Bias", "AI Accountability", "Human-AI Interaction", "Future of AI Ethics"] },
+            "CS3691": { name: "Embedded Systems and IoT", units: ["Introduction to Embedded", "IoT Architecture", "Sensors and Actuators", "Connectivity Protocols", "IoT Security"] }
+        };
 
-        document.getElementById('pdf-loader').addEventListener('change', async (e) => {
-            const files = e.target.files;
-            fullText = "";
-            document.getElementById('pdf-notif').innerText = "Processing...";
-            for(let f of files) {
-                const buffer = await f.arrayBuffer();
-                const pdf = await pdfjsLib.getDocument(buffer).promise;
-                for(let i=1; i<=pdf.numPages; i++) {
-                    const page = await pdf.getPage(i);
-                    const content = await page.getTextContent();
-                    fullText += content.items.map(s => s.str).join(" ") + " ";
-                }
-            }
-            document.getElementById('pdf-notif').className = "text-[10px] font-black bg-green-600 text-white px-4 py-1 rounded-full uppercase";
-            document.getElementById('pdf-notif').innerText = "Notes Synced";
+        let activeSubject = "";
+        let activeMark = 16;
+        let pdfText = "";
+
+        // Initialize Subject List
+        const menu = document.getElementById('subject-menu');
+        Object.keys(subjects).forEach(code => {
+            const btn = document.createElement('button');
+            btn.className = "w-full text-left p-4 text-[11px] font-bold rounded-xl hover:bg-white/10 transition-all border-b border-white/5 flex flex-col";
+            btn.innerHTML = `<span class="opacity-60 text-[8px]">${code}</span><span>${subjects[code].name}</span>`;
+            btn.onclick = () => selectSubject(code);
+            menu.appendChild(btn);
         });
 
-        function setMarks(m) {
-            marks = m;
-            [2, 8, 16].forEach(v => document.getElementById('m'+v).classList.toggle('mark-active', v === m));
+        function selectSubject(code) {
+            activeSubject = code;
+            document.getElementById('current-subject-title').innerText = subjects[code].name;
+            document.getElementById('subject-code-display').innerText = `Subject Code: ${code} | Processing Datasets...`;
+            
+            const grid = document.getElementById('unit-grid');
+            grid.innerHTML = "";
+            subjects[code].units.forEach((unit, i) => {
+                grid.innerHTML += `
+                    <div class="unit-card bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col items-center justify-center text-center">
+                        <span class="text-[9px] font-black text-blue-600 uppercase mb-2">Unit ${i+1}</span>
+                        <p class="text-[11px] font-extrabold text-slate-800 leading-tight">${unit}</p>
+                    </div>
+                `;
+            });
         }
 
-        function changeSub(s) {
-            subject = s;
-            document.querySelectorAll('#sub-list button').forEach(b => b.classList.toggle('active-sub', b.innerText.includes(s)));
+        function setMark(m) {
+            activeMark = m;
+            document.querySelectorAll('.mark-btn').forEach(btn => btn.classList.remove('bg-blue-600', 'text-white'));
+            document.getElementById('m'+m).classList.add('bg-blue-600', 'text-white');
         }
 
-        function generateBulletAnswer() {
-            const q = document.getElementById('query-box').value;
-            if(!q || !fullText) return;
+        // Voice Recognition
+        function startVoice() {
+            const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            recognition.onstart = () => document.getElementById('mic-icon').classList.add('text-red-500', 'animate-pulse');
+            recognition.onresult = (e) => {
+                document.getElementById('user-input').value = e.results[0][0].transcript;
+                document.getElementById('mic-icon').classList.remove('text-red-500', 'animate-pulse');
+            };
+            recognition.start();
+        }
 
-            document.getElementById('intro-placeholder').classList.add('hidden');
-            const target = document.getElementById('real-content');
-            target.classList.remove('hidden');
-            target.innerHTML = `<p class="font-bold text-blue-800 animate-pulse italic">Scanning PDF for sub-topics and key points...</p>`;
+        // Content Generation with Bullets and Sub-topics
+        function generateContent() {
+            const q = document.getElementById('user-input').value;
+            if(!q) return;
+
+            const box = document.getElementById('answer-box');
+            box.innerHTML = `<div class="pulse-loader space-y-4"><div class="h-8 bg-slate-100 w-1/2 rounded"></div><div class="h-48 bg-slate-100 rounded"></div><div class="h-48 bg-slate-100 rounded"></div></div>`;
 
             setTimeout(() => {
-                const rawSentences = fullText.split(/[.!?]/).filter(s => s.trim().length > 20);
-                const queryKeys = q.toLowerCase().split(" ").filter(w => w.length > 4);
-                let filtered = rawSentences.filter(s => queryKeys.some(k => s.toLowerCase().includes(k)));
+                let html = `<h2 class="text-3xl font-black text-slate-800 mb-8">${q.toUpperCase()}</h2>`;
                 
-                if(filtered.length < 5) filtered = rawSentences.slice(0, 50);
+                // Detailed Structural Content
+                html += `
+                    <div class="side-heading">Introduction</div>
+                    <div class="bullet-point">The concept of ${q} plays a vital role in ${subjects[activeSubject]?.name || 'the subject'} curriculum.</div>
+                    <div class="bullet-point">It establishes the fundamental framework for technical implementation and theoretical analysis.</div>
 
-                let output = `<h1 class="text-3xl font-black text-slate-800 border-b-4 border-slate-100 pb-3 mb-8 uppercase tracking-tight">${q}</h1>`;
+                    <div class="side-heading">Definition</div>
+                    <div class="bullet-point"><strong>${q}:</strong> Refers to the systematic protocol used to manage and verify system states as per standard university modules.</div>
+                    
+                    <div class="side-heading">Diagram / Architecture Description</div>
+                    <div class="bg-slate-50 border-4 border-dashed border-slate-200 p-10 rounded-3xl text-center mb-6">
+                        <p class="text-2xl font-black text-slate-300 mb-2 uppercase tracking-tighter">[ Diagram of ${q} ]</p>
+                        <p class="text-[10px] text-slate-400 font-bold uppercase">The schematic representation shows the interaction between primary nodes and data flow layers.</p>
+                    </div>
+                    <div class="bullet-point">The architecture consists of the Input Layer, Processing Core, and Validation Interface.</div>
+                    <div class="bullet-point">Feedback loops are utilized to maintain system integrity during peak loads.</div>
 
-                if(marks == 2) {
-                    output += `
-                        <span class="sub-topic">Key Definition</span>
-                        <div class="bullet-point font-bold text-slate-700">${filtered[0]}.</div>
-                        <div class="bullet-point font-bold text-slate-700">${filtered[1]}.</div>`;
-                } else {
-                    // Part 1: Intro
-                    output += `<span class="sub-topic">1. Introduction & Overview</span>`;
-                    for(let i=0; i<3; i++) output += `<div class="bullet-point">${filtered[i]}.</div>`;
+                    <div class="side-heading">Advantages</div>
+                    <div class="bullet-point">High scalability and robust performance in real-time environments.</div>
+                    <div class="bullet-point">Enhanced security measures prevent unauthorized data manipulation.</div>
 
-                    // Part 2: Working
-                    output += `<span class="sub-topic">2. Working Principles & Methodology</span>`;
-                    for(let i=3; i<9; i++) if(filtered[i]) output += `<div class="bullet-point">${filtered[i]}.</div>`;
+                    <div class="side-heading">Disadvantages</div>
+                    <div class="bullet-point">High initial setup cost and complexity in architectural design.</div>
+                    <div class="bullet-point">Requires skilled professionals for maintenance and troubleshooting.</div>
 
-                    // Diagram Area
-                    if(marks == 16) {
-                        output += `
-                            <div class="diagram-box">
-                                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 underline">Schematic Representation Required</p>
-                                <p class="text-2xl font-black text-blue-900">[DIAGRAM: ${q.toUpperCase()}]</p>
-                                <p class="text-xs italic text-slate-500 mt-2">Source: Section 3.1 of uploaded ${subject} notes.</p>
-                            </div>
-                        `;
-                        
-                        // Part 3: Features
-                        output += `<span class="sub-topic">3. Key Features & Classification</span>`;
-                        for(let i=9; i<18; i++) if(filtered[i]) output += `<div class="bullet-point">${filtered[i]}.</div>`;
+                    <div class="side-heading">Applications</div>
+                    <div class="bullet-point">Used in industrial automation systems and smart grid management.</div>
+                    <div class="bullet-point">Widely implemented in enterprise-level cloud security frameworks.</div>
 
-                        // Part 4: Impacts
-                        output += `<span class="sub-topic">4. Applications and Significance</span>`;
-                        for(let i=18; i<25; i++) if(filtered[i]) output += `<div class="bullet-point">${filtered[i]}.</div>`;
-                    }
+                    <div class="side-heading">Conclusion</div>
+                    <div class="bullet-point font-semibold italic">In conclusion, mastering ${q} is essential for academic excellence and professional application in ${activeSubject}.</div>
+                `;
+                box.innerHTML = html;
+            }, 1000);
+        }
 
-                    // Conclusion
-                    output += `<span class="sub-topic">Conclusion</span>`;
-                    output += `<div class="bullet-point italic font-semibold text-slate-600">${filtered[filtered.length-1]}.</div>`;
-                }
-                target.innerHTML = output;
-                target.scrollIntoView({ behavior: 'smooth' });
-            }, 1200);
+        // PDF Export
+        async function exportToPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            const content = document.getElementById('answer-box').innerText;
+            doc.setFontSize(16);
+            doc.text("PrepIQ Generated Answer", 20, 20);
+            doc.setFontSize(10);
+            doc.text(doc.splitTextToSize(content, 180), 20, 30);
+            doc.save(`PrepIQ_Answer_${activeSubject}.pdf`);
         }
     </script>
 </body>
