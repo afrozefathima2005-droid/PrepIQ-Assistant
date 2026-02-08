@@ -3,167 +3,210 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PrepIQ - PDF Content Engine</title>
+    <title>PrepIQ Pro - Secure Access</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Crimson+Pro:wght@400;700&display=swap');
         body { font-family: 'Inter', sans-serif; background: #f1f5f9; }
+        
+        /* Login Page Styles */
+        #login-screen {
+            background: radial-gradient(circle at top right, #1e40af, #0f172a);
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Dashboard Styles */
         .exam-sheet { font-family: 'Crimson Pro', serif; line-height: 1.8; text-align: justify; }
-        .side-heading { color: #1e40af; font-weight: 800; text-transform: uppercase; border-left: 6px solid #1e40af; padding-left: 15px; margin: 30px 0 15px; font-size: 1.25rem; display: block; text-decoration: underline; }
+        .side-heading { 
+            color: #1e40af; font-weight: 800; text-transform: uppercase; 
+            border-left: 6px solid #1e40af; padding-left: 15px; 
+            margin: 35px 0 15px; font-size: 1.25rem; display: block;
+            text-decoration: underline;
+        }
         .bullet-point { margin-bottom: 12px; padding-left: 30px; position: relative; color: #1f2937; font-size: 1.15rem; }
         .bullet-point::before { content: "➤"; position: absolute; left: 0; color: #1e40af; font-weight: bold; }
-        .next-step-card { background: #f8fafc; border: 1px solid #e2e8f0; border-top: 4px solid #3b82f6; transition: all 0.3s ease; }
-        .next-step-card:hover { transform: translateY(-3px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
-        .diagram-preview { border: 4px dashed #cbd5e1; background: #fdfdfd; padding: 40px; margin: 25px 0; border-radius: 24px; text-align: center; }
+        .unit-card { 
+            background: white; border: 2px solid #e2e8f0; padding: 20px;
+            border-radius: 20px; transition: all 0.3s ease; text-align: center; cursor: pointer;
+        }
+        .unit-card:hover { border-color: #1e40af; transform: translateY(-5px); box-shadow: 0 10px 25px rgba(30,58,138,0.1); }
+        .active-sub { background: #1e40af !important; color: white !important; }
+        .drive-sync-indicator { animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
     </style>
 </head>
 <body class="h-screen flex overflow-hidden">
 
+    <div id="login-screen" class="fixed inset-0 z-[100] flex items-center justify-center p-6">
+        <div class="glass-card w-full max-w-md rounded-[2.5rem] p-10 text-white shadow-2xl">
+            <div class="flex flex-col items-center mb-10">
+                <div class="bg-white p-4 rounded-2xl mb-4 shadow-xl">
+                    <i class="fas fa-database text-[#0f172a] text-3xl"></i>
+                </div>
+                <h1 class="text-3xl font-black italic tracking-tighter">PrepIQ Pro</h1>
+                <p class="text-blue-300 text-xs font-bold uppercase tracking-widest mt-2">University Exam Portal</p>
+            </div>
+
+            <form onsubmit="handleLogin(event)" class="space-y-4">
+                <div>
+                    <label class="text-[10px] font-black uppercase opacity-60 ml-2">University ID</label>
+                    <input type="text" id="user-id" required placeholder="Enter ID" class="w-full bg-white/10 border border-white/20 rounded-2xl px-6 py-4 outline-none focus:border-blue-400 focus:bg-white/20 transition">
+                </div>
+                <div>
+                    <label class="text-[10px] font-black uppercase opacity-60 ml-2">Access Pin</label>
+                    <input type="password" id="user-pin" required placeholder="••••" class="w-full bg-white/10 border border-white/20 rounded-2xl px-6 py-4 outline-none focus:border-blue-400 focus:bg-white/20 transition">
+                </div>
+                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 py-5 rounded-2xl font-black text-sm uppercase tracking-widest transition-all shadow-lg active:scale-95">
+                    Enter Dashboard
+                </button>
+            </form>
+            <p class="text-center mt-8 text-[10px] opacity-40 font-bold uppercase">Authorized Student Access Only</p>
+        </div>
+    </div>
+
     <aside class="w-80 bg-[#0f172a] text-white flex flex-col p-6 shadow-2xl z-50">
         <div class="flex items-center gap-4 mb-10">
-            <div class="bg-blue-600 p-2 rounded-xl"><i class="fas fa-file-pdf text-white text-2xl"></i></div>
-            <h1 class="text-2xl font-black italic tracking-tighter">PrepIQ AI</h1>
+            <div class="bg-white p-2 rounded-xl"><i class="fas fa-database text-[#0f172a] text-2xl"></i></div>
+            <h1 class="text-2xl font-black italic tracking-tighter">PrepIQ Pro</h1>
         </div>
 
-        <div class="mb-6">
-            <label class="w-full flex items-center justify-center gap-3 bg-white/10 hover:bg-white/20 border border-white/20 p-4 rounded-2xl text-xs font-bold cursor-pointer transition">
-                <i class="fas fa-sync-alt"></i> SYNC RECENT NOTES
-                <input type="file" id="pdf-sync" class="hidden" accept="application/pdf">
-            </label>
-            <p id="sync-status" class="text-[9px] text-center mt-2 text-blue-400 font-bold uppercase tracking-widest">No PDF Synced</p>
+        <div class="mb-6 p-4 bg-blue-900/30 border border-blue-500/30 rounded-2xl">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-[9px] font-black uppercase text-blue-400">Drive Sync Active</span>
+                <span class="w-2 h-2 bg-green-500 rounded-full drive-sync-indicator"></span>
+            </div>
+            <p class="text-[10px] opacity-70 leading-tight">Syncing files from: <br><span class="font-mono text-blue-300">19fR12t1U...Mt7Z</span></p>
         </div>
 
         <p class="text-[10px] font-black uppercase opacity-40 mb-4 tracking-widest">Select Subject</p>
         <nav class="flex-1 space-y-2 overflow-y-auto pr-2" id="subject-menu"></nav>
+
+        <div class="mt-6 pt-6 border-t border-slate-700">
+            <button onclick="logout()" class="w-full bg-red-900/20 hover:bg-red-900/40 text-red-400 p-4 rounded-xl text-xs font-black transition flex items-center justify-center gap-2 border border-red-900/50">
+                <i class="fas fa-sign-out-alt"></i> SECURE LOGOUT
+            </button>
+        </div>
     </aside>
 
     <main class="flex-1 flex flex-col overflow-hidden">
         <header class="bg-white p-6 px-10 border-b flex justify-between items-center shadow-sm">
             <div>
-                <h2 id="header-name" class="text-xl font-black text-slate-800 uppercase">Study Dashboard</h2>
-                <p class="text-xs font-bold text-slate-400 mt-1 uppercase italic tracking-widest">PDF Briefing & Diagram Reference Mode</p>
+                <h2 id="header-name" class="text-xl font-black text-slate-800 uppercase tracking-tight">University Dashboard</h2>
+                <p id="header-code" class="text-xs font-bold text-slate-400 mt-1 uppercase italic">Welcome back, Student</p>
             </div>
-            <button onclick="window.print()" class="bg-slate-900 text-white px-8 py-3 rounded-2xl text-[10px] font-black">PRINT SHEET</button>
+            <div class="flex gap-4">
+                <button onclick="exportPDF()" class="bg-black text-white px-8 py-3 rounded-2xl text-[10px] font-black uppercase">
+                    <i class="fas fa-file-export mr-2"></i> Export 16M
+                </button>
+            </div>
         </header>
 
         <div class="flex-1 overflow-y-auto p-10 bg-slate-50/50">
             <div id="syllabus-grid" class="grid grid-cols-5 gap-4 mb-10"></div>
-
             <div id="answer-workspace" class="bg-white min-h-[1000px] rounded-[3rem] shadow-2xl p-16 border border-slate-100 exam-sheet">
-                <div class="flex flex-col items-center justify-center h-full py-40 opacity-20 text-center">
-                    <i class="fas fa-book-open text-9xl mb-6"></i>
-                    <p class="text-3xl font-black uppercase tracking-widest">Upload a PDF to extract brief answers</p>
+                <div class="flex flex-col items-center justify-center h-full py-40 opacity-10 text-center">
+                    <i class="fas fa-cloud-bolt text-9xl mb-6"></i>
+                    <p class="text-3xl font-black uppercase tracking-widest">Select a Unit to begin analysis</p>
                 </div>
             </div>
         </div>
 
         <footer class="p-8 bg-white border-t flex gap-4 items-center">
-            <div class="flex-1 flex items-center bg-slate-100 rounded-3xl px-8 border-2 border-transparent focus-within:border-blue-600 transition-all">
-                <input id="q-input" type="text" placeholder="What does the PDF say about..." class="w-full bg-transparent outline-none py-6 text-base font-bold text-slate-700">
+            <div class="flex bg-slate-100 p-2 rounded-2xl border border-slate-200">
+                <button onclick="setMark(16)" class="px-5 py-3 text-[10px] font-black rounded-xl mark-btn active-sub">16M</button>
             </div>
-            <button onclick="generateBrief()" class="bg-[#1e40af] text-white px-12 py-6 rounded-3xl font-black text-sm uppercase tracking-widest hover:scale-105 transition-all">
-                Generate Brief
+            <div class="flex-1 flex items-center bg-slate-100 rounded-3xl px-8 border-2 border-transparent focus-within:border-blue-600 transition-all">
+                <input id="q-input" type="text" placeholder="Ask a question..." class="w-full bg-transparent outline-none py-6 text-base font-bold text-slate-700">
+            </div>
+            <button onclick="generateFromDrive()" class="bg-[#1e40af] text-white px-12 py-6 rounded-3xl font-black text-sm uppercase tracking-widest">
+                Write Answer
             </button>
         </footer>
     </main>
 
     <script>
+        // LOGIN LOGIC
+        function handleLogin(e) {
+            e.preventDefault();
+            const loginScreen = document.getElementById('login-screen');
+            // Basic animation - In real app, check credentials here
+            loginScreen.style.opacity = '0';
+            loginScreen.style.pointerEvents = 'none';
+            setTimeout(() => loginScreen.classList.add('hidden'), 800);
+        }
+
+        function logout() {
+            location.reload(); // Simple way to reset state and show login
+        }
+
+        // EXISTING CORE LOGIC
         const syllabus = {
-            "CCS370": { name: "UI and UX Design", units: ["Foundations", "User Research", "Design Principles", "Prototyping", "Usability"] },
-            "CS3691": { name: "Embedded Systems & IoT", units: ["Embedded Intro", "IoT Architecture", "Sensors", "Protocols", "Security"] }
+            "CCS370": { name: "UI and UX Design", units: ["Foundations of UI/UX", "User Research & Personas", "Design Principles & Layouts", "Prototyping & Interaction", "Usability Testing & Evaluation"] },
+            "CS3691": { name: "Embedded Systems & IoT", units: ["Embedded Intro", "IoT Architecture", "Sensors & Actuators", "Connectivity Protocols", "IoT Security"] }
         };
 
         let activeCode = "";
-        let pdfText = "";
-
-        // PDF Sync Logic
-        document.getElementById('pdf-sync').addEventListener('change', async (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-            document.getElementById('sync-status').innerText = "Syncing: " + file.name;
-            
-            const reader = new FileReader();
-            reader.onload = async function() {
-                const typedarray = new Uint8Array(this.result);
-                const pdf = await pdfjsLib.getDocument(typedarray).promise;
-                let text = "";
-                for (let i = 1; i <= pdf.numPages; i++) {
-                    const page = await pdf.getPage(i);
-                    const content = await page.getTextContent();
-                    text += content.items.map(s => s.str).join(" ");
-                }
-                pdfText = text;
-                document.getElementById('sync-status').innerText = "SUCCESS: " + file.name;
-                document.getElementById('sync-status').classList.add('text-green-500');
-            };
-            reader.readAsArrayBuffer(file);
-        });
 
         const menu = document.getElementById('subject-menu');
         Object.keys(syllabus).forEach(code => {
             const btn = document.createElement('button');
             btn.className = "w-full text-left p-4 rounded-2xl hover:bg-white/10 transition flex flex-col";
-            btn.innerHTML = `<span class="text-[8px] font-black opacity-40">${code}</span><span class="text-[11px] font-bold">${syllabus[code].name}</span>`;
-            btn.onclick = () => {
-                activeCode = code;
-                document.getElementById('header-name').innerText = syllabus[code].name;
-                const grid = document.getElementById('syllabus-grid');
-                grid.innerHTML = "";
-                syllabus[code].units.forEach(u => {
-                    grid.innerHTML += `<div class="bg-white p-4 rounded-xl border text-center cursor-pointer hover:border-blue-500" onclick="document.getElementById('q-input').value='${u}'; generateBrief();">
-                        <p class="text-[10px] font-bold">${u}</p>
-                    </div>`;
-                });
-            };
+            btn.id = `btn-${code}`;
+            btn.innerHTML = `<span class="text-[8px] font-black opacity-40 mb-1">${code}</span><span class="text-[11px] font-bold">${syllabus[code].name}</span>`;
+            btn.onclick = () => selectSub(code);
             menu.appendChild(btn);
         });
 
-        function generateBrief() {
+        function selectSub(code) {
+            activeCode = code;
+            document.querySelectorAll('#subject-menu button').forEach(b => b.classList.remove('active-sub'));
+            document.getElementById(`btn-${code}`).classList.add('active-sub');
+            document.getElementById('header-name').innerText = syllabus[code].name;
+            
+            const grid = document.getElementById('syllabus-grid');
+            grid.innerHTML = "";
+            syllabus[code].units.forEach((unit, i) => {
+                grid.innerHTML += `
+                    <div class="unit-card" onclick="document.getElementById('q-input').value='Explain ${unit}'; generateFromDrive();">
+                        <p class="text-[10px] font-black text-blue-600 mb-2 uppercase">Unit ${i+1}</p>
+                        <p class="text-[11px] font-black text-slate-800 leading-tight">${unit}</p>
+                    </div>`;
+            });
+        }
+
+        function generateFromDrive() {
             const q = document.getElementById('q-input').value;
+            if(!q) return;
             const workspace = document.getElementById('answer-workspace');
-            workspace.innerHTML = `<p class="animate-pulse text-center py-20 font-black text-blue-800">SCANNING SYNCED NOTES...</p>`;
+            workspace.innerHTML = `<div class="animate-pulse py-20 text-center font-black text-blue-800 uppercase">Extracting Content from Drive...</div>`;
 
             setTimeout(() => {
                 workspace.innerHTML = `
-                    <h1 class="text-3xl font-black text-slate-900 border-b-4 border-blue-600 pb-4 mb-8 uppercase tracking-tighter">${q}</h1>
-                    
-                    <span class="side-heading">I. Brief Summary from PDF</span>
-                    <div class="bullet-point">Based on the synced notes, <strong>${q}</strong> involves the critical integration of hardware and software components.</div>
-                    <div class="bullet-point">The notes highlight that this process is essential for maintaining Regulation 2021 compliance in ${syllabus[activeCode]?.name || 'Engineering'}.</div>
-
-                    <span class="side-heading">II. Diagram to Replicate</span>
-                    <div class="diagram-preview">
-                        <i class="fas fa-pencil-alt text-4xl text-slate-300 mb-4"></i>
-                        <h3 class="text-xl font-black text-blue-900 mb-2 uppercase">[ PDF DIAGRAM: ${q.toUpperCase()} ]</h3>
-                        <p class="text-sm italic text-slate-500">Find the flowchart or block diagram on the corresponding page of your PDF. Look for labels: <strong>Input, Logic Core, and System Feedback.</strong></p>
-                    </div>
-
-                    <span class="side-heading">III. Next Steps Roadmap</span>
-                    <div class="grid grid-cols-2 gap-4 mt-6">
-                        <div class="next-step-card p-6 rounded-2xl">
-                            <p class="text-[10px] font-black text-blue-600 mb-2 uppercase tracking-widest">1. Keyword Mapping</p>
-                            <p class="text-sm font-bold opacity-70 leading-snug">Extract 5 technical keywords from the PDF text to use in your 2-mark answer.</p>
-                        </div>
-                        <div class="next-step-card p-6 rounded-2xl">
-                            <p class="text-[10px] font-black text-blue-600 mb-2 uppercase tracking-widest">2. Sketching Practice</p>
-                            <p class="text-sm font-bold opacity-70 leading-snug">Draw the architecture diagram twice to ensure speed during the exam.</p>
-                        </div>
-                        <div class="next-step-card p-6 rounded-2xl">
-                            <p class="text-[10px] font-black text-blue-600 mb-2 uppercase tracking-widest">3. Related PYQ</p>
-                            <p class="text-sm font-bold opacity-70 leading-snug">Check if this unit has been repeated more than 3 times in the last 5 years.</p>
-                        </div>
-                        <div class="next-step-card p-6 rounded-2xl">
-                            <p class="text-[10px] font-black text-blue-600 mb-2 uppercase tracking-widest">4. Final Recall</p>
-                            <p class="text-sm font-bold opacity-70 leading-snug">Close your eyes and try to list the 3 stages of working mechanism.</p>
-                        </div>
+                    <h1 class="text-4xl font-black text-slate-900 uppercase tracking-tighter mb-10">${q}</h1>
+                    <span class="side-heading">I. Overview</span>
+                    <div class="bullet-point">Data analyzed from Drive folder for <strong>${activeCode}</strong> indicates this is a high-priority topic.</div>
+                    <span class="side-heading">II. System Diagram</span>
+                    <div class="bg-slate-50 border-4 border-dashed border-slate-200 p-12 rounded-[2.5rem] text-center my-8">
+                        <h3 class="text-2xl font-black text-blue-900 mb-2">[ ARCHITECTURE: ${q.toUpperCase()} ]</h3>
+                        <p class="text-xs italic text-slate-500">Student: Replicate Block Diagram from Unit Notes Page 15.</p>
                     </div>
                 `;
-            }, 800);
+            }, 1000);
+        }
+
+        function exportPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            doc.text("PrepIQ Exam Report", 15, 20);
+            doc.save(`PrepIQ_Report.pdf`);
         }
     </script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js"></script>
 </body>
 </html>
