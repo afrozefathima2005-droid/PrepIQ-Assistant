@@ -3,103 +3,97 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PrepIQ - Authentic Exam Generator</title>
+    <title>PrepIQ - Structured Exam Mode</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;700&display=swap');
-        .exam-font { font-family: 'Crimson Pro', serif; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+        body { font-family: 'Inter', sans-serif; }
         .active-sub { background: #1e40af; color: white; border-radius: 8px; font-weight: bold; }
-        .mark-active { background: #1e40af; color: white; transform: scale(1.05); box-shadow: 0 4px 15px rgba(30,64,175,0.3); }
-        .answer-text { line-height: 1.9; font-size: 1.15rem; color: #1a202c; text-align: justify; }
-        .side-heading { font-weight: 800; text-decoration: underline; margin-top: 25px; display: block; text-transform: uppercase; color: #1e3a8a; }
-        .diagram-container { border: 3px double #cbd5e1; background: #f8fafc; padding: 40px; margin: 30px 0; border-radius: 20px; text-align: center; }
+        .mark-active { background: #1e40af; color: white; transform: scale(1.05); }
+        .sub-topic { color: #1e40af; font-weight: 800; text-transform: uppercase; font-size: 0.9rem; margin-top: 25px; display: block; border-bottom: 2px solid #e2e8f0; padding-bottom: 4px; margin-bottom: 12px; }
+        .bullet-point { position: relative; padding-left: 25px; margin-bottom: 10px; line-height: 1.6; color: #334155; }
+        .bullet-point::before { content: "•"; position: absolute; left: 0; color: #1e40af; font-weight: bold; font-size: 1.2rem; }
+        .diagram-box { border: 2px dashed #cbd5e1; background: #f8fafc; padding: 30px; margin: 25px 0; text-align: center; border-radius: 15px; }
     </style>
 </head>
-<body class="bg-slate-100 min-h-screen">
+<body class="bg-slate-50">
 
-    <nav class="bg-[#1e40af] text-white p-4 px-10 flex justify-between items-center shadow-xl sticky top-0 z-50">
+    <nav class="bg-[#1e40af] text-white p-4 px-10 flex justify-between items-center shadow-lg">
         <div class="flex items-center gap-3">
-            <i class="fas fa-file-signature text-2xl"></i>
-            <h1 class="text-xl font-black tracking-tight">PrepIQ <span class="font-light">v3.0</span></h1>
+            <i class="fas fa-list-check text-2xl"></i>
+            <h1 class="text-xl font-black uppercase tracking-tighter">PrepIQ <span class="font-light tracking-normal italic text-sm">Bullet-Point Mode</span></h1>
         </div>
-        <div id="pdf-notif" class="text-[10px] font-bold bg-white/20 px-4 py-1 rounded-full uppercase border border-white/30">
-            Awaiting PDF Notes
-        </div>
+        <div id="pdf-notif" class="text-[10px] font-black bg-white/20 px-4 py-1 rounded-full uppercase border border-white/30">PDF Required</div>
     </nav>
 
     <main class="container mx-auto mt-6 grid grid-cols-12 gap-6 p-4">
         
         <div class="col-span-3 space-y-4">
             <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-                <p class="text-[10px] font-black text-slate-400 uppercase mb-4 tracking-widest">Selected Subject</p>
+                <p class="text-[10px] font-black text-slate-400 uppercase mb-4 tracking-widest">Course</p>
                 <div class="space-y-1" id="sub-list">
                     <button onclick="changeSub('CCS340')" class="w-full text-left p-3 text-sm active-sub transition-all">Cyber Security (CCS340)</button>
-                    <button onclick="changeSub('CS3691')" class="w-full text-left p-3 text-sm border-b hover:bg-slate-50">Embedded & IoT (CS3691)</button>
-                    <button onclick="changeSub('CCW331')" class="w-full text-left p-3 text-sm border-b hover:bg-slate-50">Business Analytics (CCW331)</button>
+                    <button onclick="changeSub('CS3691')" class="w-full text-left p-3 text-sm border-b">Embedded & IoT (CS3691)</button>
                 </div>
             </div>
 
             <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-                <p class="text-[10px] font-black text-slate-400 uppercase mb-4 tracking-widest">Question Value</p>
+                <p class="text-[10px] font-black text-slate-400 uppercase mb-4 tracking-widest">Marks Scheme</p>
                 <div class="grid grid-cols-3 gap-2">
-                    <button onclick="setMarks(2)" id="m2" class="border-2 py-2 rounded-xl text-xs font-bold">2M</button>
-                    <button onclick="setMarks(8)" id="m8" class="border-2 py-2 rounded-xl text-xs font-bold">8M</button>
-                    <button onclick="setMarks(16)" id="m16" class="border-2 py-2 rounded-xl text-xs font-bold mark-active">16M</button>
+                    <button onclick="setMarks(2)" id="m2" class="border-2 py-2 rounded-xl text-xs font-black">2M</button>
+                    <button onclick="setMarks(8)" id="m8" class="border-2 py-2 rounded-xl text-xs font-black">8M</button>
+                    <button onclick="setMarks(16)" id="m16" class="border-2 py-2 rounded-xl text-xs font-black mark-active">16M</button>
                 </div>
             </div>
 
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                <label class="cursor-pointer block text-center p-8 border-4 border-dashed border-blue-100 bg-blue-50/50 rounded-2xl hover:bg-blue-100 transition-all group">
-                    <i class="fas fa-book-open text-3xl text-blue-400 group-hover:scale-110 transition-transform mb-3"></i>
-                    <p class="text-[10px] font-black uppercase text-blue-900">Upload Course Material</p>
+                <label class="cursor-pointer block text-center p-6 border-2 border-dashed border-blue-100 bg-blue-50/50 rounded-xl hover:bg-blue-100 transition-all">
+                    <i class="fas fa-file-pdf text-3xl text-blue-500 mb-2"></i>
+                    <p class="text-[10px] font-black text-blue-900 uppercase">Upload Bulk PDF</p>
                     <input type="file" id="pdf-loader" class="hidden" accept="application/pdf" multiple>
                 </label>
             </div>
         </div>
 
-        <div class="col-span-9 flex flex-col h-[850px] bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden">
-            <div id="paper-view" class="flex-1 overflow-y-auto p-16 exam-font answer-text">
-                <div id="intro-placeholder" class="h-full flex flex-col items-center justify-center text-slate-300">
-                    <i class="fas fa-file-alt text-8xl mb-6 opacity-20"></i>
-                    <p class="text-2xl font-bold uppercase tracking-widest opacity-40">Ready for Examination</p>
+        <div class="col-span-9 flex flex-col h-[850px] bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden">
+            <div id="paper-view" class="flex-1 overflow-y-auto p-12">
+                <div id="intro-placeholder" class="h-full flex flex-col items-center justify-center text-slate-200">
+                    <i class="fas fa-list-ol text-8xl mb-4"></i>
+                    <p class="text-xl font-black uppercase tracking-widest opacity-30">Answer Sheet Empty</p>
                 </div>
-                <div id="real-content" class="hidden animate-in fade-in slide-in-from-bottom-5 duration-700"></div>
+                <div id="real-content" class="hidden animate-in fade-in duration-500"></div>
             </div>
 
-            <div class="p-8 bg-slate-50 border-t flex gap-4 items-center">
-                <div class="flex-1 bg-white border-2 border-slate-200 rounded-2xl px-6 py-1 flex items-center shadow-inner focus-within:border-blue-500 transition-all">
-                    <input id="query-box" type="text" placeholder="Enter Question from Syllabus..." class="w-full bg-transparent outline-none py-4 text-base font-medium">
-                </div>
-                <button onclick="generateExamAnswer()" class="bg-[#1e40af] text-white px-12 py-5 rounded-2xl font-black text-sm hover:shadow-xl hover:bg-blue-800 transition-all active:scale-95 uppercase tracking-widest">Generate Answer</button>
+            <div class="p-8 bg-slate-50 border-t flex gap-4">
+                <input id="query-box" type="text" placeholder="Explain RSA Algorithm / Types of Cyber Crimes..." class="flex-1 bg-white border-2 rounded-2xl px-6 py-4 outline-none focus:border-blue-500 text-sm font-bold shadow-sm">
+                <button onclick="generateBulletAnswer()" class="bg-[#1e40af] text-white px-10 py-4 rounded-2xl font-black text-xs hover:bg-blue-800 transition-all active:scale-95 shadow-lg">GENERATE POINTS</button>
             </div>
         </div>
     </main>
 
     <script>
-        let fullSyllabusText = "";
+        let fullText = "";
         let marks = 16;
         let subject = "CCS340";
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
 
-        // 1. PDF Real Content Extraction
         document.getElementById('pdf-loader').addEventListener('change', async (e) => {
             const files = e.target.files;
-            fullSyllabusText = "";
-            document.getElementById('pdf-notif').innerText = "Processing Notes...";
-            
+            fullText = "";
+            document.getElementById('pdf-notif').innerText = "Processing...";
             for(let f of files) {
                 const buffer = await f.arrayBuffer();
                 const pdf = await pdfjsLib.getDocument(buffer).promise;
                 for(let i=1; i<=pdf.numPages; i++) {
                     const page = await pdf.getPage(i);
                     const content = await page.getTextContent();
-                    fullSyllabusText += content.items.map(s => s.str).join(" ") + " ";
+                    fullText += content.items.map(s => s.str).join(" ") + " ";
                 }
             }
-            document.getElementById('pdf-notif').className = "text-[10px] font-bold bg-green-600 text-white px-4 py-1 rounded-full uppercase";
-            document.getElementById('pdf-notif').innerText = "Data Synced: Exam Ready";
+            document.getElementById('pdf-notif').className = "text-[10px] font-black bg-green-600 text-white px-4 py-1 rounded-full uppercase";
+            document.getElementById('pdf-notif').innerText = "Notes Synced";
         });
 
         function setMarks(m) {
@@ -112,66 +106,64 @@
             document.querySelectorAll('#sub-list button').forEach(b => b.classList.toggle('active-sub', b.innerText.includes(s)));
         }
 
-        // 2. Real Content Mapping & Formatting
-        function generateExamAnswer() {
+        function generateBulletAnswer() {
             const q = document.getElementById('query-box').value;
-            if(!q || !fullSyllabusText) { alert("Please upload notes and type question."); return; }
+            if(!q || !fullText) return;
 
             document.getElementById('intro-placeholder').classList.add('hidden');
             const target = document.getElementById('real-content');
             target.classList.remove('hidden');
-            target.innerHTML = `<p class="font-bold text-blue-900 animate-pulse">Reading syllabus content and drafting answer...</p>`;
+            target.innerHTML = `<p class="font-bold text-blue-800 animate-pulse italic">Scanning PDF for sub-topics and key points...</p>`;
 
             setTimeout(() => {
-                // Break PDF into actual sentences
-                const rawSentences = fullSyllabusText.split(/[.!?]/).filter(s => s.trim().length > 15);
-                const queryKeys = q.toLowerCase().split(" ").filter(w => w.length > 3);
+                const rawSentences = fullText.split(/[.!?]/).filter(s => s.trim().length > 20);
+                const queryKeys = q.toLowerCase().split(" ").filter(w => w.length > 4);
+                let filtered = rawSentences.filter(s => queryKeys.some(k => s.toLowerCase().includes(k)));
                 
-                // Find sentences that actually contain syllabus keywords
-                let matchSentences = rawSentences.filter(s => queryKeys.some(k => s.toLowerCase().includes(k)));
-                
-                // Backup if no match: use subject-related content
-                if(matchSentences.length < 5) matchSentences = rawSentences.slice(0, 40);
+                if(filtered.length < 5) filtered = rawSentences.slice(0, 50);
 
-                let examOutput = `<h1 class="text-4xl font-black text-slate-900 border-b-8 border-slate-100 pb-4 mb-8 leading-tight">${q.toUpperCase()}</h1>`;
+                let output = `<h1 class="text-3xl font-black text-slate-800 border-b-4 border-slate-100 pb-3 mb-8 uppercase tracking-tight">${q}</h1>`;
 
                 if(marks == 2) {
-                    examOutput += `<div class="bg-blue-50/50 p-8 rounded-3xl border-l-[10px] border-blue-600">
-                        <strong>Definition:</strong> ${matchSentences.slice(0, 3).join(". ")}.
-                    </div>`;
-                } else if(marks == 8) {
-                    examOutput += `
-                        <span class="side-heading">I. Introduction</span>
-                        <p>${matchSentences.slice(0, 5).join(". ")}.</p>
-                        
-                        <span class="side-heading">II. Core Concepts & Explanation</span>
-                        <p>${matchSentences.slice(5, 15).join(". ")}.</p>
-                        
-                        <span class="side-heading">III. Summary</span>
-                        <p>${matchSentences.slice(15, 18).join(". ")}.</p>`;
+                    output += `
+                        <span class="sub-topic">Key Definition</span>
+                        <div class="bullet-point font-bold text-slate-700">${filtered[0]}.</div>
+                        <div class="bullet-point font-bold text-slate-700">${filtered[1]}.</div>`;
                 } else {
-                    examOutput += `
-                        <span class="side-heading">I. Introduction & Theoretical Background</span>
-                        <p>${matchSentences.slice(0, 7).join(". ")}.</p>
+                    // Part 1: Intro
+                    output += `<span class="sub-topic">1. Introduction & Overview</span>`;
+                    for(let i=0; i<3; i++) output += `<div class="bullet-point">${filtered[i]}.</div>`;
+
+                    // Part 2: Working
+                    output += `<span class="sub-topic">2. Working Principles & Methodology</span>`;
+                    for(let i=3; i<9; i++) if(filtered[i]) output += `<div class="bullet-point">${filtered[i]}.</div>`;
+
+                    // Diagram Area
+                    if(marks == 16) {
+                        output += `
+                            <div class="diagram-box">
+                                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 underline">Schematic Representation Required</p>
+                                <p class="text-2xl font-black text-blue-900">[DIAGRAM: ${q.toUpperCase()}]</p>
+                                <p class="text-xs italic text-slate-500 mt-2">Source: Section 3.1 of uploaded ${subject} notes.</p>
+                            </div>
+                        `;
                         
-                        <span class="side-heading">II. Detailed Working Principle</span>
-                        <p>${matchSentences.slice(7, 20).join(". ")}.</p>
-                        
-                        <div class="diagram-container">
-                            <p class="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 mb-4">Required University Schematic</p>
-                            <h4 class="text-2xl font-bold text-blue-900 mb-2">[Diagram: ${q}]</h4>
-                            <p class="text-sm italic text-slate-500">Student Instruction: Draw the flowchart/architecture provided in Section 2 of your ${subject} syllabus notes.</p>
-                        </div>
-                        
-                        <span class="side-heading">III. Key Features & Advantages</span>
-                        <p>${matchSentences.slice(20, 35).join(". ")}.</p>
-                        
-                        <span class="side-heading">IV. Conclusion</span>
-                        <p class="font-bold italic text-slate-600 border-t pt-4 mt-8">${matchSentences.slice(35, 38).join(". ")}.</p>`;
+                        // Part 3: Features
+                        output += `<span class="sub-topic">3. Key Features & Classification</span>`;
+                        for(let i=9; i<18; i++) if(filtered[i]) output += `<div class="bullet-point">${filtered[i]}.</div>`;
+
+                        // Part 4: Impacts
+                        output += `<span class="sub-topic">4. Applications and Significance</span>`;
+                        for(let i=18; i<25; i++) if(filtered[i]) output += `<div class="bullet-point">${filtered[i]}.</div>`;
+                    }
+
+                    // Conclusion
+                    output += `<span class="sub-topic">Conclusion</span>`;
+                    output += `<div class="bullet-point italic font-semibold text-slate-600">${filtered[filtered.length-1]}.</div>`;
                 }
-                target.innerHTML = examOutput;
+                target.innerHTML = output;
                 target.scrollIntoView({ behavior: 'smooth' });
-            }, 1500);
+            }, 1200);
         }
     </script>
 </body>
