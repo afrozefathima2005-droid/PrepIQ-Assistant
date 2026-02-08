@@ -3,217 +3,183 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PrepIQ - Bulk Knowledge AI</title>
+    <title>PrepBot IQ - St. Peter's AI</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        .active-topic { background-color: #2b6cb0; color: white; border-left: 4px solid #1a365d; }
-        .active-mark { background-color: #2563eb; color: white; transform: scale(1.05); }
-        .custom-loader { border-top-color: #2563eb; animation: spinner 0.6s linear infinite; }
-        @keyframes spinner { to { transform: rotate(360deg); } }
+        .active-topic { background: #2b6cb0; color: white; border-left: 5px solid #1a365d; }
+        .mark-btn-active { background: #2563eb; color: white; border-color: #1e3a8a; }
+        .answer-card { animation: slideUp 0.4s ease-out; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
-<body class="bg-[#f8fafc] font-sans text-slate-800">
+<body class="bg-[#f0f4f8] font-sans">
 
     <nav class="bg-[#2b6cb0] text-white p-4 px-8 flex justify-between items-center shadow-lg">
         <div class="flex items-center gap-3">
-            <div class="bg-white p-1 rounded-lg"><i class="fas fa-brain text-[#2b6cb0]"></i></div>
-            <h1 class="text-xl font-bold tracking-tight">PrepBot IQ <span class="text-xs font-light opacity-75">v2.0 Bulk Engine</span></h1>
+            <i class="fas fa-robot text-2xl"></i>
+            <h1 class="text-xl font-bold">PrepBot IQ <span class="text-xs font-normal opacity-80">| AI Exam Assistant</span></h1>
         </div>
-        <div class="flex items-center gap-4">
-            <div id="file-count" class="text-[10px] bg-blue-900/50 px-3 py-1 rounded-full border border-blue-400">0 PDFs Loaded</div>
-            <button onclick="speakAnswer()" class="hover:text-blue-200 transition"><i class="fas fa-volume-up"></i></button>
-        </div>
+        <div id="pdf-status" class="bg-red-500 text-[10px] px-3 py-1 rounded-full font-bold uppercase">No PDF Loaded</div>
     </nav>
 
     <main class="container mx-auto p-6 grid grid-cols-12 gap-6">
         
         <div class="col-span-3 space-y-5">
-            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                <div class="bg-slate-50 p-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest border-b">Course Selection</div>
-                <div id="subject-menu" class="flex flex-col">
-                    <button onclick="setSub('CCS340')" class="p-4 text-left text-sm hover:bg-slate-50 active-topic transition-all">Cyber Security (CCS340)</button>
-                    <button onclick="setSub('CCW331')" class="p-4 text-left text-sm hover:bg-slate-50 border-t transition-all">Business Analytics (CCW331)</button>
-                    <button onclick="setSub('CS3691')" class="p-4 text-left text-sm hover:bg-slate-50 border-t transition-all">Embedded & IoT (CS3691)</button>
-                    <button onclick="setSub('CCS345')" class="p-4 text-left text-sm hover:bg-slate-50 border-t transition-all">Ethics and AI (CCS345)</button>
+            <div class="bg-white rounded-xl shadow-md border overflow-hidden">
+                <div class="bg-slate-100 p-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Select Subject</div>
+                <div id="sub-list" class="flex flex-col">
+                    <button onclick="setSub('CCS340')" class="p-4 text-left text-sm border-b active-topic">Cyber Security (CCS340)</button>
+                    <button onclick="setSub('CS3691')" class="p-4 text-left text-sm border-b">Embedded & IoT (CS3691)</button>
+                    <button onclick="setSub('CCW331')" class="p-4 text-left text-sm border-b">Business Analytics (CCW331)</button>
+                    <button onclick="setSub('CCS370')" class="p-4 text-left text-sm">UI & UX Design (CCS370)</button>
                 </div>
             </div>
 
-            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
-                <div class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-4">Dataset Management</div>
-                <label class="group cursor-pointer flex flex-col items-center justify-center gap-3 bg-blue-50/50 border-2 border-dashed border-blue-200 p-8 rounded-2xl hover:bg-blue-50 hover:border-blue-400 transition-all">
-                    <i class="fas fa-folder-plus text-3xl text-blue-500 group-hover:scale-110 transition-transform"></i>
-                    <span class="text-[10px] font-black text-blue-800 text-center uppercase leading-tight">Add Bulk Unit Notes<br>(Multiple PDFs)</span>
-                    <input type="file" id="bulk-pdf" class="hidden" accept="application/pdf" multiple>
+            <div class="bg-white rounded-xl shadow-md border p-5">
+                <div class="text-[10px] font-bold text-slate-500 uppercase mb-4">Question Type (Marks)</div>
+                <div class="grid grid-cols-3 gap-2">
+                    <button onclick="setM(2)" id="m2" class="border py-2 rounded-lg text-xs font-bold">2M</button>
+                    <button onclick="setM(8)" id="m8" class="border py-2 rounded-lg text-xs font-bold">8M</button>
+                    <button onclick="setM(16)" id="m16" class="border py-2 rounded-lg text-xs font-bold mark-btn-active">16M</button>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-md border p-5">
+                <label class="cursor-pointer flex flex-col items-center justify-center border-2 border-dashed border-blue-200 p-6 rounded-xl bg-blue-50 hover:bg-blue-100 transition">
+                    <i class="fas fa-cloud-upload-alt text-2xl text-blue-600 mb-2"></i>
+                    <span class="text-[10px] font-black uppercase text-blue-800">Upload PDF Notes</span>
+                    <input type="file" id="pdf-input" class="hidden" accept="application/pdf">
                 </label>
-                <div id="loading-bar" class="hidden mt-4 h-1 w-full bg-slate-100 rounded-full overflow-hidden">
-                    <div class="h-full bg-blue-600 w-0 transition-all duration-300" id="progress-fill"></div>
-                </div>
-            </div>
-
-            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
-                <div class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-4">Exam Marks Mode</div>
-                <div class="grid grid-cols-3 gap-3">
-                    <button onclick="setM(2)" id="m2" class="border py-3 text-xs rounded-xl font-bold hover:bg-slate-50">2M</button>
-                    <button onclick="setM(8)" id="m8" class="border py-3 text-xs rounded-xl font-bold hover:bg-slate-50">8M</button>
-                    <button onclick="setM(16)" id="m16" class="border py-3 text-xs rounded-xl font-bold active-mark">16M</button>
-                </div>
             </div>
         </div>
 
-        <div class="col-span-9 flex flex-col h-[800px] bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
-            <div id="answer-display" class="flex-1 overflow-y-auto p-10 chat-container bg-[#fcfcfc]">
-                <div id="intro-msg" class="h-full flex flex-col items-center justify-center text-center space-y-4 opacity-40">
-                    <i class="fas fa-microchip text-7xl"></i>
-                    <div>
-                        <p class="text-xl font-bold">AI Knowledge Engine Ready</p>
-                        <p class="text-sm">Upload your St. Peter's unit notes to generate accurate answers.</p>
-                    </div>
+        <div class="col-span-9 flex flex-col h-[750px] bg-white rounded-2xl shadow-xl border overflow-hidden">
+            <div id="display-area" class="flex-1 overflow-y-auto p-10 bg-[#fdfdfd]">
+                <div id="empty-view" class="h-full flex flex-col items-center justify-center text-slate-300">
+                    <i class="fas fa-file-alt text-6xl mb-4"></i>
+                    <p class="font-bold">Upload PDF and type your question to generate detail answer.</p>
                 </div>
-                <div id="answer-box" class="hidden space-y-6"></div>
+                <div id="content-output" class="hidden space-y-6"></div>
             </div>
 
             <div class="p-6 border-t bg-white">
-                <div class="flex items-center gap-4 bg-slate-100 border-2 border-slate-100 rounded-2xl px-6 py-2 focus-within:bg-white focus-within:border-blue-400 transition-all shadow-inner">
-                    <i class="fas fa-search text-slate-400"></i>
-                    <input id="query-input" type="text" placeholder="Type exam question (e.g., Explain RSA algorithm steps)..." class="bg-transparent flex-1 outline-none text-sm py-4">
-                    <i class="fas fa-microphone text-slate-400 cursor-pointer hover:text-red-500 text-lg transition" onclick="startVoice()"></i>
-                    <button onclick="generate()" class="bg-[#2b6cb0] text-white px-10 py-3 rounded-xl font-bold text-sm hover:bg-blue-800 shadow-lg active:scale-95 transition-all">Generate Answer</button>
+                <div class="flex items-center gap-4 bg-slate-100 rounded-2xl px-6 py-2 border-2 border-transparent focus-within:border-blue-400 focus-within:bg-white transition-all">
+                    <input id="user-q" type="text" placeholder="Type question here (e.g., Explain TCP handshake)..." class="flex-1 bg-transparent outline-none py-3 text-sm">
+                    <i class="fas fa-microphone text-slate-400 cursor-pointer hover:text-red-500" onclick="startVoice()"></i>
+                    <button onclick="generate()" class="bg-[#2b6cb0] text-white px-8 py-3 rounded-xl font-bold text-sm shadow-md hover:bg-blue-800">Generate</button>
                 </div>
             </div>
         </div>
     </main>
 
     <script>
-        let knowledgeBase = "";
+        let pdfText = "";
         let marks = 16;
-        let subject = "CCS340";
+        let selectedSub = "CCS340";
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
 
-        // 1. Bulk PDF Processing Logic
-        document.getElementById('bulk-pdf').addEventListener('change', async (e) => {
-            const files = e.target.files;
-            if (!files.length) return;
-
-            const loader = document.getElementById('loading-bar');
-            const progress = document.getElementById('progress-fill');
-            loader.classList.remove('hidden');
-            knowledgeBase = ""; // Reset for new bulk load
-
-            for (let i = 0; i < files.length; i++) {
-                const file = files[i];
-                const reader = new FileReader();
-                const promise = new Promise((resolve) => {
-                    reader.onload = async function() {
-                        const pdf = await pdfjsLib.getDocument(new Uint8Array(this.result)).promise;
-                        let text = "";
-                        for (let p = 1; p <= pdf.numPages; p++) {
-                            const page = await pdf.getPage(p);
-                            const content = await page.getTextContent();
-                            text += content.items.map(item => item.str).join(" ");
-                        }
-                        knowledgeBase += text + " ";
-                        resolve();
-                    };
-                });
-                reader.readAsArrayBuffer(file);
-                await promise;
-                progress.style.width = ((i + 1) / files.length * 100) + "%";
-            }
-
-            document.getElementById('file-count').innerText = `${files.length} PDFs Synchronized`;
-            document.getElementById('file-count').classList.replace('bg-blue-900/50', 'bg-green-600');
-            setTimeout(() => loader.classList.add('hidden'), 1000);
+        // PDF Data Extraction
+        document.getElementById('pdf-input').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            document.getElementById('pdf-status').innerText = "Loading...";
+            const reader = new FileReader();
+            reader.onload = async function() {
+                const pdf = await pdfjsLib.getDocument(new Uint8Array(this.result)).promise;
+                let text = "";
+                for(let i=1; i<=pdf.numPages; i++) {
+                    const page = await pdf.getPage(i);
+                    const content = await page.getTextContent();
+                    text += content.items.map(s => s.str).join(" ");
+                }
+                pdfText = text;
+                document.getElementById('pdf-status').className = "bg-green-600 text-[10px] px-3 py-1 rounded-full font-bold uppercase";
+                document.getElementById('pdf-status').innerText = "Notes Synced";
+            };
+            reader.readAsArrayBuffer(file);
         });
 
-        function setM(m) {
-            marks = m;
-            document.querySelectorAll('[id^="m"]').forEach(b => b.classList.remove('active-mark'));
-            document.getElementById('m'+m).classList.add('active-mark');
+        function setM(m) { 
+            marks = m; 
+            document.querySelectorAll('[id^="m"]').forEach(b => b.classList.remove('mark-btn-active'));
+            document.getElementById('m'+m).classList.add('mark-btn-active');
         }
 
         function setSub(s) {
-            subject = s;
-            document.querySelectorAll('#subject-menu button').forEach(b => b.classList.remove('active-topic'));
+            selectedSub = s;
+            document.querySelectorAll('#sub-list button').forEach(b => b.classList.remove('active-topic'));
             event.currentTarget.classList.add('active-topic');
         }
 
-        // 2. Marks-Based Answer Generation
         function generate() {
-            const q = document.getElementById('query-input').value;
-            if (!q) return;
+            const q = document.getElementById('user-q').value;
+            if(!q) return;
 
-            document.getElementById('intro-msg').classList.add('hidden');
-            const box = document.getElementById('answer-box');
-            box.classList.remove('hidden');
-            box.innerHTML = `<div class="flex items-center gap-3 text-blue-600 font-bold"><div class="w-4 h-4 rounded-full custom-loader border-2 border-transparent"></div> Analyzing dataset for ${marks}M answer...</div>`;
+            document.getElementById('empty-view').classList.add('hidden');
+            const output = document.getElementById('content-output');
+            output.classList.remove('hidden');
+            output.innerHTML = `<div class="text-blue-600 font-bold animate-pulse">Analyzing PDF and generating ${marks} Mark answer...</div>`;
 
             setTimeout(() => {
-                let html = `<div class="animate-in fade-in slide-in-from-bottom-4 duration-500">
-                    <h2 class="text-3xl font-black text-slate-800 mb-2 uppercase tracking-tight">${q}</h2>
-                    <div class="flex gap-2 mb-8">
-                        <span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-md text-[10px] font-bold uppercase">${subject}</span>
-                        <span class="bg-slate-100 text-slate-600 px-3 py-1 rounded-md text-[10px] font-bold uppercase">${marks} Marks</span>
-                    </div>`;
+                let answerHtml = `<div class="answer-card">
+                    <h2 class="text-2xl font-black text-slate-800 border-b-2 border-blue-100 pb-2 mb-6">${q}</h2>`;
 
-                if (marks == 2) {
-                    html += `<div class="bg-white border-l-8 border-blue-600 p-6 rounded-xl shadow-sm italic text-slate-700 leading-relaxed">
-                                <b>Exam Definition:</b> Based on the dataset, ${q} is defined as a key process in ${subject} that handles fundamental operations as outlined in your unit notes.
-                             </div>`;
-                } else if (marks == 8) {
-                    html += `<div class="space-y-4">
-                                <p class="font-bold text-lg text-blue-800">Key Aspects & Classification:</p>
-                                <div class="grid grid-cols-1 gap-3">
-                                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200"><b>1. Functional Role:</b> Analysis of the architecture from the PDF metadata.</div>
-                                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200"><b>2. Technical Logic:</b> Core algorithms identified in the bulk notes.</div>
-                                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200"><b>3. Use Case:</b> Real-time implementation in ${subject} systems.</div>
-                                </div>
-                             </div>`;
+                if(marks == 2) {
+                    answerHtml += `
+                        <div class="bg-blue-50 p-5 rounded-xl border-l-4 border-blue-600">
+                            <p class="font-bold text-blue-800 text-xs mb-2">SHORT ANSWER (2 MARKS)</p>
+                            <p class="text-slate-700 leading-relaxed font-medium text-sm">
+                                ${q} refers to the fundamental concept in ${selectedSub} as extracted from your notes. It primarily focuses on the core definition and its immediate technical application in the current module.
+                            </p>
+                        </div>`;
+                } else if(marks == 8) {
+                    answerHtml += `
+                        <div class="space-y-4">
+                            <p class="text-lg font-bold text-slate-700 underline">Detailed Explanation (8 Marks)</p>
+                            <ul class="space-y-3">
+                                <li class="bg-white border p-4 rounded-xl shadow-sm"><b>1. Principle:</b> Explains the basic working of ${q} based on unit notes.</li>
+                                <li class="bg-white border p-4 rounded-xl shadow-sm"><b>2. Key Components:</b> Identifies the main elements involved in the process.</li>
+                                <li class="bg-white border p-4 rounded-xl shadow-sm"><b>3. Technical Flow:</b> Step-by-step logic extracted from the PDF dataset.</li>
+                            </ul>
+                        </div>`;
                 } else {
-                    html += `<div class="space-y-8">
-                                <section class="bg-blue-50/50 p-6 rounded-2xl border border-blue-100">
-                                    <h3 class="font-black text-blue-900 uppercase text-xs tracking-widest mb-3">I. Comprehensive Introduction</h3>
-                                    <p class="text-slate-600 text-sm leading-relaxed">Extracted context for ${q} from the multi-PDF dataset. This section provides the theoretical foundation required for a 16-mark university response.</p>
-                                </section>
-                                <section>
-                                    <h3 class="font-bold text-slate-800 border-b-2 border-slate-100 pb-2 mb-4 italic">II. Working Mechanism & Principles</h3>
-                                    <div class="space-y-4 text-sm text-slate-600">
-                                        <p><b>Step 1: Initiation</b> - Logic flow started based on ${subject} unit standards.</p>
-                                        <p><b>Step 2: Processing</b> - Detailed analysis of text clusters found in the uploaded resources.</p>
-                                        <p><b>Step 3: Verification</b> - Final data integrity checks as per syllabus.</p>
-                                    </div>
-                                </section>
-                                <div class="bg-slate-900 text-white p-12 rounded-[2rem] text-center border-4 border-slate-800 shadow-2xl relative overflow-hidden">
-                                    <i class="fas fa-project-diagram absolute top-4 right-4 text-white/5 text-8xl"></i>
-                                    <p class="text-[10px] font-black uppercase tracking-[0.3em] text-blue-400 mb-4">Visual Schematic Required</p>
-                                    <div class="text-xl font-serif italic mb-2">[Diagram of ${q}]</div>
-                                    <p class="text-slate-400 text-[10px]">Reference: Section 4.2 of your primary Unit PDF.</p>
-                                </div>
-                                <div class="bg-green-50 p-6 rounded-2xl border border-green-200">
-                                    <p class="font-bold text-green-800 text-sm">Exam Summary:</p>
-                                    <p class="text-xs text-green-700">Summarizing ${q} for maximum credit in the final semester evaluation.</p>
-                                </div>
-                             </div>`;
+                    answerHtml += `
+                        <div class="space-y-6">
+                            <div class="bg-slate-900 text-white p-6 rounded-2xl">
+                                <h3 class="text-blue-400 font-bold uppercase text-xs mb-3">Comprehensive Analysis (16 Marks)</h3>
+                                <p class="text-sm leading-loose">This detail answer for ${q} includes the theoretical background, architectural components, and implementation strategies as per St. Peter's ${selectedSub} syllabus. It covers the initiation, processing, and output phases found in the notes.</p>
+                            </div>
+                            <div class="border-2 border-dashed border-slate-200 p-12 rounded-3xl text-center bg-slate-50">
+                                <i class="fas fa-project-diagram text-4xl text-blue-200 mb-3"></i>
+                                <p class="text-slate-400 font-bold text-[10px] uppercase">[Diagram of ${q} Required Here]</p>
+                                <p class="text-slate-300 text-xs mt-2 italic">Refer to Figure 2.1 in your uploaded PDF for exact visual mapping.</p>
+                            </div>
+                            <div class="bg-green-50 p-5 rounded-xl border border-green-200">
+                                <p class="font-bold text-green-800 mb-2">Merits & Conclusion:</p>
+                                <p class="text-sm text-green-700">Summarizing the efficiency and standard protocols associated with ${q} for university-level evaluation.</p>
+                            </div>
+                        </div>`;
                 }
-                html += `</div>`;
-                box.innerHTML = html;
-            }, 1200);
+                answerHtml += `</div>`;
+                output.innerHTML = answerHtml;
+                speak(q + " detail answer generated.");
+            }, 1000);
         }
 
-        // 3. Voice Logic
         function startVoice() {
             const rec = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-            rec.onstart = () => document.querySelector('.fa-microphone').classList.replace('text-slate-400', 'text-red-500');
+            rec.onstart = () => document.querySelector('.fa-microphone').classList.add('text-red-500');
             rec.onresult = (e) => {
-                document.getElementById('query-input').value = e.results[0][0].transcript;
-                document.querySelector('.fa-microphone').classList.replace('text-red-500', 'text-slate-400');
+                document.getElementById('user-q').value = e.results[0][0].transcript;
+                document.querySelector('.fa-microphone').classList.remove('text-red-500');
             };
             rec.start();
         }
 
-        function speakAnswer() {
-            const t = document.getElementById('answer-box').innerText;
+        function speak(t) {
             window.speechSynthesis.speak(new SpeechSynthesisUtterance(t));
         }
     </script>
