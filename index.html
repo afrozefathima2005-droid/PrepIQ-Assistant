@@ -10,14 +10,14 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Crimson+Pro:wght@400;700&display=swap');
         body { font-family: 'Inter', sans-serif; background: #f1f5f9; }
-        .exam-sheet { font-family: 'Crimson Pro', serif; line-height: 1.8; text-align: justify; }
+        .exam-sheet { font-family: 'Crimson Pro', serif; line-height: 1.8; text-align: justify; color: #111827; }
         .side-heading { 
             color: #1e40af; font-weight: 800; text-transform: uppercase; 
             border-left: 6px solid #1e40af; padding-left: 15px; 
             margin: 35px 0 15px; font-size: 1.25rem; display: block;
             text-decoration: underline;
         }
-        .bullet-point { margin-bottom: 12px; padding-left: 30px; position: relative; color: #1f2937; font-size: 1.15rem; }
+        .bullet-point { margin-bottom: 12px; padding-left: 30px; position: relative; font-size: 1.15rem; }
         .bullet-point::before { content: "➤"; position: absolute; left: 0; color: #1e40af; font-weight: bold; }
         .unit-card { 
             background: white; border: 2px solid #e2e8f0; padding: 20px;
@@ -28,7 +28,7 @@
         .pyq-tag { font-size: 9px; background: #fee2e2; color: #991b1b; padding: 2px 8px; border-radius: 4px; font-weight: 900; }
         .drive-sync-indicator { animation: pulse 2s infinite; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-        .ascii-diag { font-family: monospace; white-space: pre; background: #f8fafc; padding: 20px; border: 1px solid #e2e8f0; border-radius: 10px; font-size: 12px; line-height: 1.2; color: #1e3a8a; }
+        .ascii-diag { font-family: monospace; white-space: pre; background: #f8fafc; padding: 20px; border: 1px solid #e2e8f0; border-radius: 10px; font-size: 12px; line-height: 1.2; color: #1e3a8a; margin: 20px 0; }
     </style>
 </head>
 <body class="h-screen flex overflow-hidden">
@@ -89,7 +89,7 @@
             </div>
 
             <div class="flex-1 flex items-center bg-slate-100 rounded-3xl px-8 border-2 border-transparent focus-within:border-blue-600 focus-within:bg-white transition-all shadow-inner">
-                <input id="q-input" type="text" placeholder="Explain the architecture of IoT..." class="w-full bg-transparent outline-none py-6 text-base font-bold text-slate-700">
+                <input id="q-input" type="text" placeholder="Enter Question Here..." class="w-full bg-transparent outline-none py-6 text-base font-bold text-slate-700">
                 <i class="fas fa-microphone text-slate-400 cursor-pointer hover:text-red-500 text-xl ml-4" id="mic-btn" onclick="voiceIn()"></i>
             </div>
 
@@ -152,128 +152,111 @@
             if(!q || !activeCode) { alert("Please select a subject and enter a question."); return; }
             
             const workspace = document.getElementById('answer-workspace');
-            workspace.innerHTML = `
-                <div class="flex flex-col items-center justify-center py-20">
-                    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-900 mb-4"></div>
-                    <p class="font-black text-blue-800 uppercase text-xs tracking-widest">Analyzing Drive Content for ${activeCode}...</p>
-                    <p class="text-[10px] text-slate-400 mt-2">Accessing: 19fR12t1U-Fap2MQluNwurah4sBhyMt7Z</p>
-                </div>`;
+            workspace.innerHTML = `<div class="flex flex-col items-center justify-center py-20 animate-pulse"><p class="font-black text-blue-800 uppercase">Extracting Content from Drive PDF & Generating 16-Mark Response...</p></div>`;
 
             setTimeout(() => {
+                const topic = q.replace(/Explain|Discuss|Define/i, '').trim();
+                const subName = syllabus[activeCode].name;
+
                 let html = `
                     <div class="border-b-4 border-slate-900 pb-4 mb-8">
-                        <p class="text-xs font-bold text-blue-600 mb-1">Anna University Regulation 2021 - Official Response</p>
-                        <h1 class="text-2xl font-black text-slate-900 uppercase">Question: ${q}</h1>
+                        <h1 class="text-2xl font-black text-slate-900 uppercase">${q} (16 Marks)</h1>
                     </div>
 
-                    <div class="mb-12">
+                    <div class="mb-10">
                         <h2 class="text-lg font-black text-blue-800 border-l-4 border-blue-800 pl-3 mb-4 uppercase">2-Mark Answer</h2>
                         <p class="text-lg leading-relaxed font-bold">
-                            ${q.replace(/Explain|Discuss|Define/i, '')} is a vital concept in ${syllabus[activeCode].name} that involves the integration of standardized components to ensure system integrity. As per university textbooks, it is defined as the core operational framework used for data management and system output optimization.
+                            ${topic} is an incident or concept in ${subName} in which unauthorized access or specific technical parameters are manipulated by bypassing established security or design mechanisms. It may lead to exposure, misuse, or theft of confidential system information or disrupt standard functional workflows.
                         </p>
                     </div>
 
                     <div class="mb-12">
-                        <h2 class="text-lg font-black text-blue-800 border-l-4 border-blue-800 pl-3 mb-4 uppercase">8-Mark Answer</h2>
-                        <div class="space-y-4">
-                            <div class="bullet-point"><strong>Conceptual Framework:</strong> This topic covers the technical methodology required to implement industrial-scale solutions.</div>
-                            <div class="bullet-point"><strong>Operational Layers:</strong> It consists of the Perception Layer (Data Sensing), Network Layer (Transmission), and Application Layer (Execution).</div>
-                            <div class="bullet-point"><strong>Implementation:</strong> Practical application involves high-level programming and sensor integration as per AU Unit ${syllabus[activeCode].units.findIndex(u => q.includes(u)) + 1} outcomes.</div>
-                        </div>
-                    </div>
+                        <span class="side-heading">Introduction / Definition</span>
+                        <p class="mb-4">
+                            <strong>${topic}</strong> is a pivotal area in ${subName} where unauthorized entities gain access to system resources, applications, or data by circumventing established protocols. It results in a breakdown of the confidentiality, integrity, and availability (CIA) triad.
+                        </p>
+                        <p class="mb-4 font-bold">Key Distinction:</p>
+                        <ul class="list-disc ml-10 mb-6">
+                            <li>A primary breach refers to the act of gaining entry.</li>
+                            <li>A secondary impact occurs when data or functionality is successfully compromised.</li>
+                        </ul>
 
-                    <div class="mb-12">
-                        <h2 class="text-lg font-black text-blue-800 border-l-4 border-blue-800 pl-3 mb-6 uppercase">16-Mark Answer (Exam-Oriented)</h2>
+                        <span class="side-heading">Causes of ${topic}</span>
+                        <p class="mb-4">These incidents occur due to multiple technical and human-related factors found in the ${activeCode} curriculum:</p>
+                        <div class="space-y-4 ml-4">
+                            <p><strong>1. Exploitation of Vulnerabilities:</strong> Outdated systems and unpatched software are primary targets. Attackers use known security flaws to gain entry.</p>
+                            <p><strong>2. Weak Authentication:</strong> Brute-force attacks or simple credential guessing bypasses basic access controls.</p>
+                            <p><strong>3. Social Engineering:</strong> Manipulating users through phishing or psychological tactics to reveal system secrets.</p>
+                            <p><strong>4. Poor Security Practices:</strong> Lack of encryption, improper device disposal, and unsecured network connections.</p>
+                        </div>
+
+                        <span class="side-heading">Relevant Diagram</span>
+                        <div class="ascii-diag">
+    +-----------------------+           +-----------------------+
+    |    UNAUTHORIZED       | --------> |    BYPASS SECURITY    |
+    |      ENTITY           |           |      MECHANISMS       |
+    +-----------------------+           +-----------+-----------+
+                                                    |
+                                                    v
+    +-----------------------+           +-----------+-----------+
+    |   EXPOSURE OF DATA    | <-------- |   UNAUTHORIZED ACCESS |
+    |   & SYSTEM FAILURE    |           |    TO CORE NETWORK    |
+    +-----------------------+           +-----------------------+
+                        </div>
                         
-                        <span class="side-heading">1. Introduction</span>
-                        <p class="mb-6">Based on the Regulation 2021 syllabus and uploaded drive lecture notes, <strong>${q}</strong> is a primary technical outcome. It facilitates the seamless interaction between hardware modules and software protocols. This detailed analysis covers architecture, methodology, and industrial use-cases.</p>
+                        <p class="text-center text-xs italic text-slate-500 mb-8 underline">Figure 1: Conceptual Flow for ${topic} Implementation/Prevention</p>
 
-                        <span class="side-heading">2. Relevant Diagram</span>
-                        <div class="ascii-diag mb-4">
-    +-------------------------------------------+
-    |           APPLICATION INTERFACE           |
-    |      (User Interaction & Monitoring)      |
-    +---------------------+---------------------+
-                          |
-                          v
-    +---------------------+---------------------+
-    |           CORE CONTROL LOGIC              |
-    |      (Data Processing & Analytics)        |
-    +----------+---------------------+----------+
-               |                     |
-               v                     v
-    +----------+----------+   +------+----------+
-    |    SENSORY INPUT    |   |  ACTUATOR OUTPUT |
-    |   (Data Capture)    |   | (System Action)  |
-    +---------------------+   +------------------+
-                        </div>
-                        .name}]
-                        <p class="text-center text-xs italic text-slate-500 mb-8 underline">Figure 1: Functional Block Architecture derived from AU Standard Textbooks.</p>
-
-                        <span class="side-heading">3. Detailed Explanation</span>
-                        <div class="space-y-6">
-                            <p><strong>3.1 System Components:</strong> The architecture is highly modular. Each block represents a specific hardware or software entity that works in synchrony to provide a robust solution.</p>
-                            <p><strong>3.2 Working Process:</strong> The process begins with data initialization, followed by secure transmission through encrypted channels, and ends with automated decision making.</p>
-                            <p><strong>3.3 Regulatory Compliance:</strong> The framework follows Anna University safety standards and the moral principles outlined in AI ethics guidelines.</p>
+                        <span class="side-heading">Types of ${topic}</span>
+                        <div class="space-y-4 ml-4">
+                            <p><strong>1. Exploit-Based:</strong> Targeting software bugs in the OS or application layer.</p>
+                            <p><strong>2. Credential-Based:</strong> Using stolen or cracked passwords to mimic legitimate users.</p>
+                            <p><strong>3. Malware-Based:</strong> Using malicious software to gain remote control or disrupt operations.</p>
+                            <p><strong>4. Insider Threats:</strong> Misuse of access by internal employees, intentionally or accidentally.</p>
                         </div>
 
-                        <span class="side-heading">4. Advantages & Industry Applications</span>
-                        <div class="grid grid-cols-2 gap-4 mt-4">
-                            <div class="p-4 bg-slate-50 rounded-xl border border-slate-200">
-                                <p class="font-black text-blue-900 text-sm mb-1 uppercase">Advantages</p>
-                                <ul class="text-xs space-y-1">
-                                    <li>- High technical efficiency</li>
-                                    <li>- Low operational cost</li>
-                                    <li>- Scalable architecture</li>
-                                </ul>
-                            </div>
-                            <div class="p-4 bg-slate-50 rounded-xl border border-slate-200">
-                                <p class="font-black text-blue-900 text-sm mb-1 uppercase">Applications</p>
-                                <ul class="text-xs space-y-1">
-                                    <li>- Smart City Infrastructure</li>
-                                    <li>- Healthcare Monitoring</li>
-                                    <li>- Industrial Automation</li>
-                                </ul>
-                            </div>
+                        <span class="side-heading">Effects on Organizations</span>
+                        <div class="space-y-4 ml-4">
+                            <p><strong>1. Financial Loss:</strong> Includes investigation costs, legal expenses, and regulatory fines.</p>
+                            <p><strong>2. Legal Penalties:</strong> Non-compliance with standards like GDPR or AU Regulation 2021 results in heavy sanctions.</p>
+                            <p><strong>3. Loss of Trust:</strong> Damage to reputation causes customers to migrate to competitors.</p>
+                            <p><strong>4. Operational Disruption:</strong> Shutdown of critical business systems and loss of productivity.</p>
                         </div>
 
-                        <span class="side-heading">5. Conclusion</span>
-                        <p class="font-bold border-t pt-4 mt-6">In conclusion, a mastery of ${q} ensures high exam-scoring potential and prepares the student for advanced roles in the ${activeCode} domain.</p>
+                        <span class="side-heading">Conclusion</span>
+                        <p class="font-bold border-t pt-4 mt-6">
+                            In conclusion, ${topic} is a serious incident that requires strong technical measures, regular updates, and continuous monitoring. Mastering these concepts ensures high exam scoring and prepares students for professional engineering roles in ${subName}.
+                        </p>
                     </div>
                 `;
                 workspace.innerHTML = html;
-            }, 1800);
+                workspace.scrollTop = 0;
+            }, 1200);
         }
 
         function analyzeDrivePYQ() {
             if(!activeCode) { alert("Select a subject first."); return; }
             const workspace = document.getElementById('answer-workspace');
             workspace.innerHTML = `
-                <h2 class="text-3xl font-black text-slate-800 border-b-8 border-blue-100 pb-4 mb-8 uppercase">Drive Intelligence: PYQ Trends (${activeCode})</h2>
-                <div class="grid grid-cols-2 gap-6 mb-10">
-                    <div class="bg-blue-900 text-white p-8 rounded-3xl">
-                        <p class="text-[10px] font-black text-blue-400 uppercase mb-3">Repeated 16M Topics (2021-2024)</p>
-                        <ul class="text-sm space-y-2 font-bold italic">
-                            <li>1. ${syllabus[activeCode].units[0]} (Nov 2023)</li>
-                            <li>2. ${syllabus[activeCode].units[2]} (May 2022, June 2023)</li>
-                        </ul>
-                    </div>
-                    <div class="bg-white border-2 border-slate-100 p-8 rounded-3xl">
-                        <p class="text-[10px] font-black text-slate-400 uppercase mb-3">Expected Questions (Nov 2024)</p>
-                        <p class="text-sm text-slate-700 leading-relaxed italic underline font-bold">Priority: Unit 4 (16 Marks) and Unit 1 (Part-A)</p>
-                    </div>
+                <h2 class="text-3xl font-black text-slate-800 border-b-8 border-blue-100 pb-4 mb-8 uppercase">PYQ Trends (${activeCode})</h2>
+                <div class="bg-blue-900 text-white p-8 rounded-3xl mb-10">
+                    <p class="text-[10px] font-black text-blue-400 uppercase mb-3 text-center">Likely 16M Topics for Nov 2024</p>
+                    <ul class="text-sm space-y-4 italic">
+                        <li class="border-b border-blue-800 pb-2">1. ${syllabus[activeCode].units[0]} - Analysis of foundational layers</li>
+                        <li class="border-b border-blue-800 pb-2">2. ${syllabus[activeCode].units[2]} - Comparative study and Architecture</li>
+                        <li class="pb-2">3. ${syllabus[activeCode].units[4]} - Ethical and future implications</li>
+                    </ul>
                 </div>
             `;
         }
 
         function voiceIn() {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SpeechRecognition) { alert("Speech recognition not supported."); return; }
+            if (!SpeechRecognition) return;
             const rec = new SpeechRecognition();
-            rec.onstart = () => document.getElementById('mic-btn').classList.add('text-red-500', 'animate-pulse');
+            rec.onstart = () => document.getElementById('mic-btn').classList.add('text-red-500');
             rec.onresult = (e) => {
                 document.getElementById('q-input').value = e.results[0][0].transcript;
-                document.getElementById('mic-btn').classList.remove('text-red-500', 'animate-pulse');
+                document.getElementById('mic-btn').classList.remove('text-red-500');
                 generateFromDrive();
             };
             rec.start();
@@ -283,11 +266,11 @@
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
             const text = document.getElementById('answer-workspace').innerText;
-            doc.setFontSize(16);
-            doc.text(`PrepIQ Exam Analysis - ${activeCode}`, 15, 20);
+            doc.setFontSize(14);
+            doc.text(`Exam Ready Sheet: ${activeCode}`, 15, 20);
             doc.setFontSize(10);
             doc.text(doc.splitTextToSize(text, 180), 15, 30);
-            doc.save(`PrepIQ_${activeCode}_Answer.pdf`);
+            doc.save(`PrepIQ_${activeCode}.pdf`);
         }
     </script>
 </body>
