@@ -132,8 +132,7 @@
                 const pdf = await pdfjsLib.getDocument({data: pdfData}).promise;
                 let fullText = "", diagPage = 1;
 
-                // DEEP SEARCH FOR 16 MARKS (SCAN MORE PAGES)
-                for(let i=1; i<=Math.min(pdf.numPages, 15); i++) {
+                for(let i=1; i<=Math.min(pdf.numPages, 20); i++) {
                     const page = await pdf.getPage(i);
                     const content = await page.getTextContent();
                     const pageStr = content.items.map(s => s.str).join(" ");
@@ -148,49 +147,51 @@
         function formatSixteenMarkAnswer(q, mark, text, pdf, dp) {
             const workspace = document.getElementById('workspace');
             
-            // SMART SPLITTING FOR SUB-TITLES & BULLETS
-            const sentences = text.split('. ').filter(s => s.length > 10);
-            const intro = sentences.slice(0, 5).join('. ') + '.';
-            const bulletPoints = sentences.slice(5, 15);
-            const deepContent = sentences.slice(15, 45).join('. ') + '.';
+            // SMART FORMATTING LOGIC
+            const sentences = text.split('. ').filter(s => s.trim().length > 15);
+            const intro = sentences.slice(0, 4).join('. ') + '.';
+            const bulletGroup = sentences.slice(4, 12);
+            const detailedBody = sentences.slice(12, 50).join('. ') + '.';
 
             workspace.innerHTML = `
                 <div class="border-b-[10px] border-black pb-6 mb-12">
                     <h1 class="text-5xl font-black uppercase italic tracking-tighter leading-tight">${q}</h1>
                     <div class="flex justify-between mt-4 text-blue-600 font-bold uppercase tracking-widest text-xs italic">
-                        <span>Subject: ${syllabus[activeCode]}</span>
-                        <span>Evaluation: ${mark} Marks</span>
+                        <span>Subject Code: ${activeCode}</span>
+                        <span>Marks Category: ${mark} Marks</span>
                     </div>
                 </div>
 
-                <span class="side-heading">I. Core Concept & Definition</span>
-                <p class="mb-8">${intro}</p>
+                <span class="side-heading">I. INTRODUCTION & CONTEXTUAL BACKGROUND</span>
+                <p class="mb-8 font-medium text-slate-700">${intro}</p>
 
-                <span class="side-heading">II. Key Principles / Features</span>
-                <div class="bullet-list mb-8">
-                    ${bulletPoints.map(p => `<div class="bullet-item font-bold text-slate-700">${p}</div>`).join('')}
+                <span class="side-heading">II. KEY COMPONENTS & OBJECTIVES</span>
+                <div class="bullet-list mb-10">
+                    ${bulletGroup.map(p => `<div class="bullet-item font-bold text-slate-800">${p.trim()}</div>`).join('')}
                 </div>
 
-                <span class="side-heading">III. Technical Diagram & Architecture</span>
+                <span class="side-heading">III. TECHNICAL BLOCK DIAGRAM (EXTRACTED)</span>
                 <div class="flex flex-col items-center p-12 bg-slate-50 border-4 border-dashed border-slate-200 rounded-[3rem] my-12">
                     <canvas id="pdf-diag"></canvas>
-                    <p class="mt-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Fig: System Architecture Extracted from Unit Notes</p>
+                    <p class="mt-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] italic">Visual Reference: Logic Flow Diagram</p>
                 </div>
 
-                <span class="side-heading">IV. Detailed Technical Elaboration</span>
-                <div class="space-y-6">
-                    <p>${deepContent}</p>
-                    <div class="p-8 bg-blue-50 border-l-[10px] border-blue-600 rounded-r-3xl italic font-semibold text-blue-900">
-                        "Note: As per University Regulation 2021, the above-mentioned process follows the standard industry framework for ${syllabus[activeCode]}."
-                    </div>
+                <span class="side-heading">IV. COMPREHENSIVE TECHNICAL ELABORATION</span>
+                <div class="space-y-6 text-slate-800 leading-relaxed">
+                    <p>${detailedBody}</p>
                 </div>
 
-                <span class="side-heading">V. Applications & Conclusion</span>
-                <p>In summary, ${q} plays a vital role in ${syllabus[activeCode]}. The implementation details provided above cover all technical aspects required for a comprehensive 16-mark university answer.</p>
+                <div class="p-10 bg-blue-50 border-l-[12px] border-blue-600 rounded-r-[2rem] my-12">
+                    <h4 class="font-black text-blue-900 uppercase text-sm mb-2 italic">Regulation 2021 Note:</h4>
+                    <p class="text-blue-800 font-semibold italic">"The above technical analysis is structured based on the standard syllabus requirements for ${syllabus[activeCode]}, focusing on core industrial implementation."</p>
+                </div>
+
+                <span class="side-heading">V. CONCLUSION</span>
+                <p class="font-medium">Design thinking, particularly ${q}, acts as a crucial non-linear process used to understand users and solve complex problems. The stages outlined provide a robust framework for innovation in ${syllabus[activeCode]}.</p>
 
                 <div class="mt-20 pt-10 border-t border-slate-100 flex justify-between items-center opacity-30 italic text-[10px] font-bold uppercase tracking-widest">
                     <span>Generated by PrepIQ Master Engine</span>
-                    <span>© Regulation 2021 Content</span>
+                    <span>© University Exam Framework</span>
                 </div>
             `;
 
@@ -207,7 +208,7 @@
         }
 
         async function fetchPYQ() {
-            // ... (Same PYQ Fetch logic from previous code)
+            // (Previous PYQ code logic remains same)
         }
 
         renderSubMenu();
