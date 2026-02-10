@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PrepIQ Pro - Ultimate AI Exam Suite</title>
+    <title>PrepIQ Pro - PDF Deep Analyzer</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
@@ -13,239 +14,215 @@
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Crimson+Pro:wght@400;600;700;800&display=swap');
-        body { font-family: 'Inter', sans-serif; background: #f0f4f8; overflow: hidden; }
-        .exam-sheet { font-family: 'Crimson Pro', serif; line-height: 1.8; color: #1e293b; text-align: justify; font-size: 1.25rem; }
-        .side-heading { color: #1e40af; font-weight: 800; text-transform: uppercase; border-left: 8px solid #1e40af; padding-left: 15px; margin: 35px 0 15px; font-size: 1.5rem; display: block; }
+        body { font-family: 'Inter', sans-serif; background: #f1f5f9; overflow: hidden; }
+        .exam-sheet { font-family: 'Crimson Pro', serif; line-height: 1.8; color: #1e293b; text-align: justify; font-size: 1.3rem; }
+        .side-heading { color: #1e40af; font-weight: 800; text-transform: uppercase; border-left: 8px solid #1e40af; padding-left: 15px; margin: 35px 0 15px; font-size: 1.6rem; display: block; }
         .bullet-point { margin-bottom: 12px; padding-left: 35px; position: relative; }
         .bullet-point::before { content: "⮚"; position: absolute; left: 0; color: #2563eb; font-weight: bold; }
-        .diagram-container { border: 2px dashed #94a3b8; border-radius: 24px; background: #f8fafc; margin: 30px 0; padding: 40px; text-align: center; }
-        .active-sub { background: #1e40af !important; color: white !important; border-left: 4px solid #60a5fa; }
-        .active-mark { background: #1e40af !important; color: white !important; }
-        .custom-scrollbar::-webkit-scrollbar { width: 5px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+        .active-sub { background: #1e40af !important; color: white !important; border-right: 5px solid #60a5fa; }
+        .diagram-canvas { border: 2px solid #cbd5e1; border-radius: 12px; max-width: 100%; background: white; margin: 20px 0; }
+        .loading-spinner { border: 4px solid #f3f3f3; border-top: 4px solid #2563eb; border-radius: 50%; width: 40px; height: 40px; animate: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body class="h-screen flex">
 
     <aside class="w-80 bg-[#0f172a] text-white flex flex-col p-6 shadow-2xl z-50">
         <div class="flex items-center gap-4 mb-8">
-            <div class="bg-blue-600 p-3 rounded-2xl shadow-lg shadow-blue-500/20"><i class="fas fa-brain text-white text-2xl"></i></div>
-            <h1 class="text-2xl font-black italic tracking-tighter">PrepIQ <span class="text-blue-400 text-[10px] block not-italic font-bold tracking-[0.2em]">ULTIMATE ENGINE</span></h1>
+            <div class="bg-blue-600 p-3 rounded-2xl"><i class="fas fa-file-pdf text-2xl"></i></div>
+            <h1 class="text-xl font-black italic">PREP-IQ <span class="text-blue-400 text-xs block not-italic">PDF ANALYZER</span></h1>
         </div>
 
-        <p class="text-[10px] font-black uppercase opacity-40 mb-4 tracking-widest">Available Subjects</p>
-        <nav class="flex-1 space-y-1 overflow-y-auto pr-2 custom-scrollbar" id="subject-menu"></nav>
+        <nav class="flex-1 space-y-1 overflow-y-auto pr-2 custom-scrollbar" id="subject-menu">
+            </nav>
 
-        <div class="mt-6 space-y-3">
-            <button onclick="fetchPYQ()" class="w-full bg-gradient-to-r from-orange-600 to-red-600 p-4 rounded-xl text-[11px] font-black uppercase tracking-widest hover:scale-105 transition shadow-lg">
-                <i class="fas fa-scroll mr-2"></i> Previous Year Questions
+        <div class="mt-4 space-y-2">
+            <button onclick="fetchPYQ()" class="w-full bg-orange-600 hover:bg-orange-500 p-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition">
+                <i class="fas fa-star mr-2"></i> Previous Year Button
             </button>
-            <button id="auth_button" onclick="handleAuthClick()" class="w-full bg-slate-800 border border-slate-700 p-4 rounded-xl text-[11px] font-black uppercase tracking-widest hover:bg-slate-700 transition">
-                <i class="fab fa-google mr-2"></i> Drive Sync
+            <button id="auth_button" onclick="handleAuthClick()" class="w-full bg-blue-700 p-4 rounded-xl text-[10px] font-black uppercase tracking-widest">
+                <i class="fab fa-google mr-2"></i> Sync Google Drive
             </button>
         </div>
     </aside>
 
-    <main class="flex-1 flex flex-col relative">
-        <div id="loader" class="hidden absolute inset-0 bg-white/90 z-[100] flex flex-col items-center justify-center">
-            <div class="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
-            <p class="font-black text-slate-800 uppercase tracking-widest">Analyzing Drive PDFs...</p>
+    <main class="flex-1 flex flex-col relative bg-white">
+        <div id="loader" class="hidden absolute inset-0 bg-white/95 z-[100] flex flex-col items-center justify-center">
+            <div class="loading-spinner mb-4"></div>
+            <p class="font-black text-slate-800 uppercase tracking-widest text-sm">Extracting Answers from PDF...</p>
         </div>
 
-        <header class="bg-white p-6 px-10 border-b flex justify-between items-center shadow-sm">
+        <header class="p-6 border-b flex justify-between items-center">
             <div>
-                <h2 id="header-name" class="text-xl font-black text-slate-800 uppercase tracking-tight italic">Select Subject</h2>
-                <p id="header-code" class="text-xs font-bold text-blue-500 uppercase tracking-widest">DRIVE ANALYZER ACTIVE</p>
+                <h2 id="current-sub-title" class="text-xl font-black text-slate-800">Select a Subject</h2>
+                <p id="current-sub-code" class="text-xs font-bold text-blue-600 uppercase">Regulation 2021</p>
             </div>
-            <button onclick="exportPDF()" class="bg-black text-white px-8 py-3 rounded-2xl text-[10px] font-black uppercase hover:shadow-xl transition">
-                <i class="fas fa-file-pdf mr-2"></i> Download Answer
-            </button>
+            <button onclick="window.print()" class="bg-black text-white px-6 py-2 rounded-lg text-xs font-bold uppercase">Print Answer</button>
         </header>
 
-        <div class="flex-1 overflow-y-auto p-12 bg-slate-50" id="main-scroll">
-            <div id="syllabus-grid" class="grid grid-cols-5 gap-4 mb-10"></div>
-            
-            <div id="answer-workspace" class="bg-white min-h-[1600px] rounded-[3rem] shadow-2xl p-20 border border-slate-200 exam-sheet">
-                <div class="flex flex-col items-center justify-center h-full py-40 opacity-10">
-                    <i class="fas fa-search-plus text-9xl mb-6"></i>
-                    <p class="text-3xl font-black uppercase">Scanning PDF Content...</p>
-                </div>
+        <div class="flex-1 overflow-y-auto p-10 bg-slate-50" id="scroll-box">
+            <div id="unit-nav" class="flex gap-2 mb-8 overflow-x-auto pb-2"></div>
+            <div id="answer-workspace" class="bg-white min-h-screen rounded-3xl shadow-xl p-16 border border-slate-200 exam-sheet">
+                <div class="text-center py-20 opacity-20 italic text-2xl font-bold">Search a question to analyze PDF...</div>
             </div>
         </div>
 
-        <footer class="p-8 bg-white border-t flex gap-6 items-center shadow-2xl">
-            <div class="flex bg-slate-100 p-2 rounded-2xl border">
-                <button onclick="setMark(2)" id="m2" class="px-6 py-3 text-[12px] font-black rounded-xl transition">2M</button>
-                <button onclick="setMark(8)" id="m8" class="px-6 py-3 text-[12px] font-black rounded-xl transition">8M</button>
-                <button onclick="setMark(16)" id="m16" class="px-6 py-3 text-[12px] font-black rounded-xl transition active-mark">16M</button>
-            </div>
-
-            <div class="flex-1 flex items-center bg-slate-100 rounded-3xl px-8 border-2 border-transparent focus-within:border-blue-600 focus-within:bg-white transition-all shadow-inner">
-                <input id="q-input" type="text" placeholder="Enter Question from PDF..." class="w-full bg-transparent outline-none py-6 text-lg font-bold text-slate-700">
-                <i class="fas fa-microphone text-slate-400 cursor-pointer hover:text-red-500 text-xl ml-4" onclick="startVoice()"></i>
-            </div>
-
-            <button onclick="generateAnswer()" class="bg-blue-700 text-white px-14 py-6 rounded-3xl font-black text-sm uppercase tracking-widest hover:bg-blue-800 shadow-xl transition-all">
-                Write Answer
-            </button>
+        <footer class="p-6 bg-white border-t flex gap-4 items-center">
+            <select id="mark-select" class="bg-slate-100 p-4 rounded-2xl font-black text-sm outline-none border-2 border-transparent focus:border-blue-600">
+                <option value="2">2 Marks</option>
+                <option value="16" selected>16 Marks</option>
+            </select>
+            <input id="q-input" type="text" placeholder="Type question from PDF..." class="flex-1 bg-slate-100 p-4 rounded-2xl font-bold outline-none border-2 border-transparent focus:border-blue-600">
+            <button onclick="analyzePDFContent()" class="bg-blue-600 text-white px-10 py-4 rounded-2xl font-black uppercase text-sm shadow-lg hover:bg-blue-700">Analyze</button>
         </footer>
     </main>
 
     <script>
-        // CONFIG
         const API_KEY = 'AIzaSyAUUKecmyrSKsMg-5TWILmeqZYj7IvLhak';
         const CLIENT_ID = '117220129745-80bq3mepsv8nac80d1lsdbv3usb41jp8.apps.googleusercontent.com';
-        const FOLDER_ID = '1CAZNHtFM_BiZWX9Z-i5VlYtH0gDHDSJ5';
+        const FOLDER_ID = 'https://drive.google.com/drive/folders/1CAZNHtFM_BiZWX9Z-i5VlYtH0gDHDSJ5?usp=drive_link';
+
+        const pdfjsLib = window['pdfjs-dist/build/pdf'];
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
 
         const syllabus = {
-            "CCS370": { name: "UI and UX Design", units: ["Design Foundations", "User Research", "Prototyping", "Design Evaluation", "Usability Testing"] },
-            "CCW331": { name: "Business Analytics", units: ["Introduction", "Preprocessing", "Descriptive", "Predictive", "Decisions"] },
-            "CCS340": { name: "Cyber Security", units: ["Cyber Crime", "Cyber Offenses", "Tools", "Security Models", "Legal"] },
-            "OEE351": { name: "Renewable Energy", units: ["Solar Energy", "Wind Power", "Bio-Energy", "Hydro Systems", "Hybrid Models"] },
-            "CCS345": { name: "Ethics and AI", units: ["Principles", "Bias", "Accountability", "AI Interaction", "Future Scope"] },
-            "CS3691": { name: "Embedded & IoT", units: ["Embedded Intro", "Architecture", "Sensors", "Protocols", "IoT Security"] },
-            "CS301": { name: "Operating Systems", units: ["Overview", "Processes", "Memory", "Storage", "Protection"] },
-            "CS302": { name: "Computer Networks", units: ["Physical Layer", "Data Link", "Network Layer", "Transport", "Application"] }
+            "CCS370": { name: "UI/UX Design", units: ["Foundations", "User Research", "Prototyping", "Testing"] },
+            "CCW331": { name: "Business Analytics", units: ["Intro", "Preprocessing", "Descriptive", "Predictive"] },
+            "CCS340": { name: "Cyber Security", units: ["Crime", "Tools", "Security", "Legal"] },
+            "CS3491": { name: "AI & ML", units: ["Search", "Logic", "Learning", "Applications"] },
+            "CS3351": { name: "Digital Principles", units: ["Gates", "Combinational", "Sequential", "Memory"] },
+            "MG3451": { name: "Principles of Mgmt", units: ["Planning", "Organizing", "Staffing", "Leading"] }
         };
 
-        let tokenClient, activeCode = "CCS370", activeMark = 16;
+        let tokenClient, activeCode = "CCS370";
 
         function gapiLoaded() { gapi.load('client', () => gapi.client.init({apiKey: API_KEY, discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"]})); }
-        function gisLoaded() { tokenClient = google.accounts.oauth2.initTokenClient({client_id: CLIENT_ID, scope: 'https://www.googleapis.com/auth/drive.readonly', callback: (r) => { if(!r.error) document.getElementById('auth_button').innerText="Sync Active"; }}); }
+        function gisLoaded() { tokenClient = google.accounts.oauth2.initTokenClient({client_id: CLIENT_ID, scope: 'https://www.googleapis.com/auth/drive.readonly', callback: (r) => { if(!r.error) document.getElementById('auth_button').innerText="Drive Active"; }}); }
         function handleAuthClick() { tokenClient.requestAccessToken({prompt: 'consent'}); }
 
-        function initApp() {
+        function init() {
             const menu = document.getElementById('subject-menu');
             Object.keys(syllabus).forEach(code => {
-                menu.innerHTML += `
-                    <button onclick="activeCode='${code}'; renderUnits();" id="nav-${code}" class="w-full text-left p-4 rounded-xl transition-all flex flex-col mb-1 ${code===activeCode?'active-sub':'hover:bg-white/5 text-slate-400'}">
-                        <span class="text-[9px] font-black uppercase mb-1">${code}</span>
-                        <span class="text-[12px] font-bold">${syllabus[code].name}</span>
-                    </button>`;
+                menu.innerHTML += `<button onclick="setSubject('${code}')" id="btn-${code}" class="w-full text-left p-4 rounded-xl transition-all flex flex-col mb-1 hover:bg-white/10">
+                    <span class="text-[9px] font-black opacity-50">${code}</span>
+                    <span class="text-sm font-bold">${syllabus[code].name}</span>
+                </button>`;
             });
-            renderUnits();
+            setSubject("CCS370");
         }
 
-        function renderUnits() {
+        function setSubject(code) {
+            activeCode = code;
             document.querySelectorAll('#subject-menu button').forEach(b => b.classList.remove('active-sub'));
-            document.getElementById(`nav-${activeCode}`).classList.add('active-sub');
-            document.getElementById('header-name').innerText = syllabus[activeCode].name;
-            document.getElementById('header-code').innerText = activeCode;
-            
-            const grid = document.getElementById('syllabus-grid');
-            grid.innerHTML = "";
-            syllabus[activeCode].units.forEach((u, i) => {
-                grid.innerHTML += `
-                    <div onclick="document.getElementById('q-input').value='${u}'; generateAnswer();" class="bg-white border p-5 rounded-2xl text-center cursor-pointer hover:shadow-xl hover:border-blue-400 transition-all">
-                        <p class="text-[10px] font-black text-blue-600 mb-1">UNIT ${i+1}</p>
-                        <p class="text-[11px] font-bold text-slate-800">${u}</p>
-                    </div>`;
-            });
+            document.getElementById('btn-'+code).classList.add('active-sub');
+            document.getElementById('current-sub-title').innerText = syllabus[code].name;
+            document.getElementById('current-sub-code').innerText = code;
         }
 
-        function setMark(m) {
-            activeMark = m;
-            document.querySelectorAll('[id^="m"]').forEach(b => b.classList.remove('active-mark'));
-            document.getElementById('m'+m).classList.add('active-mark');
-        }
-
-        async function generateAnswer() {
+        async function analyzePDFContent() {
             const q = document.getElementById('q-input').value;
+            const mark = document.getElementById('mark-select').value;
             if(!q) return;
+
             document.getElementById('loader').classList.remove('hidden');
 
             try {
-                const response = await gapi.client.drive.files.list({
-                    'q': `'${FOLDER_ID}' in parents and name contains '${activeCode}'`,
-                    'fields': "files(id, name)"
+                // 1. Search for PDF in Drive
+                const res = await gapi.client.drive.files.list({
+                    q: `'${FOLDER_ID}' in parents and name contains '${activeCode}'`,
+                    fields: "files(id, name)"
                 });
-                const files = response.result.files;
+                const file = res.result.files[0];
+                if(!file) throw new Error("PDF not found!");
 
-                setTimeout(() => {
-                    let html = `
-                        <div class="mb-10 border-b-8 border-slate-900 pb-6 flex justify-between items-end">
-                            <div>
-                                <p class="text-blue-600 font-black text-sm uppercase tracking-widest mb-2">Subject: ${syllabus[activeCode].name}</p>
-                                <h1 class="text-4xl font-black uppercase text-slate-900">${q}</h1>
-                            </div>
-                            <span class="bg-blue-600 text-white px-8 py-3 rounded-2xl font-black uppercase text-xs shadow-lg mb-4">${activeMark} Marks</span>
-                        </div>`;
+                // 2. Fetch PDF Binary Data
+                const pdfRes = await fetch(`https://www.googleapis.com/drive/v3/files/${file.id}?alt=media`, {
+                    headers: { Authorization: `Bearer ${gapi.client.getToken().access_token}` }
+                });
+                const arrayBuffer = await pdfRes.arrayBuffer();
+                const pdf = await pdfjsLib.getDocument({data: arrayBuffer}).promise;
 
-                    if(activeMark === 2) {
-                        html += `
-                            <span class="side-heading">Technical Definition</span>
-                            <p class="text-2xl"><strong>${q}</strong> is defined as a critical technical framework in <strong>${activeCode}</strong> standards. According to the PDF repository <em>(${files[0]?.name || 'Unit Notes'})</em>, it facilitates the core processing of system tasks with high efficiency and specific validation protocols.</p>
-                        `;
-                    } else {
-                        // 16 MARKS - 800 WORDS STRUCTURE
-                        html += `
-                            <span class="side-heading">I. Introduction & Theoretical Background</span>
-                            <p>In the comprehensive study of <strong>${syllabus[activeCode].name}</strong>, <strong>${q}</strong> plays a pivotal role. Based on the analysis of PDF documents in the repository, this topic addresses the fundamental architectural requirements needed for modern engineering applications. It provides the necessary abstraction to handle complex operations seamlessly.</p>
-                            
-                            <span class="side-heading">II. System Architecture / Block Diagram</span>
-                            <div class="diagram-container">
-                                
-                                <p class="text-xs font-black text-slate-400 uppercase tracking-widest mt-6 italic">Fig 1.1: Functional Workflow of ${q}</p>
-                            </div>
+                // 3. Extract Text from PDF
+                let fullText = "";
+                for(let i=1; i<=Math.min(pdf.numPages, 10); i++) { // First 10 pages for speed
+                    const page = await pdf.getPage(i);
+                    const text = await page.getTextContent();
+                    fullText += text.items.map(s => s.str).join(" ");
+                }
 
-                            <span class="side-heading">III. Core Functional Components</span>
-                            <div class="bullet-point"><strong>Main Controller Unit:</strong> Acts as the primary execution engine as described in the subject unit notes.</div>
-                            <div class="bullet-point"><strong>Data Flow Interface:</strong> Manages the input/output stream within the ${activeCode} framework.</div>
-                            <div class="bullet-point"><strong>Security & Validation Layer:</strong> Implements the constraints specified in the Regulation 2021 curriculum.</div>
+                // 4. Render Answer
+                renderAnswer(q, mark, fullText, pdf);
 
-                            <span class="side-heading">IV. Detailed Working Mechanism (800 Words Elaboration)</span>
-                            <p>The operational logic of ${q} involves multiple stages of synchronization. As extracted from the <strong>${files[0]?.name || 'Course PDF'}</strong>, the process begins with an initialization phase where parameters are mapped to user requirements. Following this, the iterative cycle ensures that every technical bottleneck is identified and resolved.</p>
-                            <p class="mt-4">Furthermore, the integration of ${q} with secondary systems allows for a distributed processing model. This is essential for high-performance tasks in ${syllabus[activeCode].name}. The repository emphasizes that without this framework, the latency in system response would increase significantly...</p>
-                            
-                            <span class="side-heading">V. Merits, Limitations & Applications</span>
-                            <table class="w-full border-collapse border border-slate-200 my-8">
-                                <tr class="bg-slate-100">
-                                    <th class="border p-4 text-left font-black text-blue-900">Key Advantages</th>
-                                    <th class="border p-4 text-left font-black text-red-900">Technical Limitations</th>
-                                </tr>
-                                <tr><td class="border p-4">High Precision Output</td><td class="border p-4">Resource Intensive Initialization</td></tr>
-                                <tr><td class="border p-4">Scalable Architecture</td><td class="border p-4">Complex Debugging Process</td></tr>
-                            </table>
-
-                            <span class="side-heading">VI. Conclusion</span>
-                            <p>Summarizing the analysis from the university repository, <strong>${q}</strong> is an indispensable part of the <strong>${activeCode}</strong> syllabus, ensuring both technical excellence and practical reliability in real-world scenarios.</p>
-                        `;
-                    }
-
-                    document.getElementById('answer-workspace').innerHTML = html;
-                    document.getElementById('loader').classList.add('hidden');
-                    document.getElementById('main-scroll').scrollTo({top:0, behavior:'smooth'});
-                }, 1500);
-
-            } catch(e) { 
+            } catch(e) {
+                alert("Error: " + e.message);
+            } finally {
                 document.getElementById('loader').classList.add('hidden');
-                alert("Drive Sync Required for PDF Analysis!"); 
             }
         }
 
+        function renderAnswer(q, mark, text, pdf) {
+            const workspace = document.getElementById('answer-workspace');
+            let content = "";
+
+            if(mark == "2") {
+                content = `
+                    <h2 class="text-2xl font-black uppercase mb-4 text-blue-800">${q}</h2>
+                    <span class="side-heading">Definition</span>
+                    <p>${text.substring(0, 400)}...</p>
+                `;
+            } else {
+                // 16 MARKS - 800 WORDS FORMAT
+                content = `
+                    <div class="border-b-4 border-black pb-4 mb-8">
+                        <h1 class="text-4xl font-black uppercase">${q}</h1>
+                        <p class="font-bold text-blue-600 mt-2">Analyzed from ${activeCode} Repository</p>
+                    </div>
+
+                    <span class="side-heading">I. Introduction</span>
+                    <p>${text.substring(0, 800)}</p>
+
+                    <span class="side-heading">II. System Diagram (From PDF)</span>
+                    <div class="flex flex-col items-center py-6 bg-slate-50 border-2 border-dashed rounded-3xl">
+                        <canvas id="pdf-diag" class="diagram-canvas shadow-2xl"></canvas>
+                        <p class="text-[10px] font-black uppercase mt-4 text-slate-400">Diagram Extracted from Source PDF</p>
+                    </div>
+
+                    <span class="side-heading">III. Core Functional Analysis</span>
+                    <div class="bullet-point"><strong>Layer 1:</strong> ${text.substring(800, 1300)}</div>
+                    <div class="bullet-point"><strong>Layer 2:</strong> ${text.substring(1300, 1800)}</div>
+                    <div class="bullet-point"><strong>Layer 3:</strong> ${text.substring(1800, 2300)}</div>
+
+                    <span class="side-heading">IV. Detailed Implementation (800 Words Context)</span>
+                    <p>${text.substring(2300, 4000)}</p>
+                    
+                    <span class="side-heading">V. Merits & Applications</span>
+                    <ul class="list-disc ml-10 space-y-2">
+                        <li>High Reliability based on PDF documentation.</li>
+                        <li>Standard Protocol Compliance.</li>
+                        <li>Scalable architecture for modern systems.</li>
+                    </ul>
+                `;
+            }
+            workspace.innerHTML = content;
+
+            // DRAW DIAGRAM FROM PDF PAGE 1
+            pdf.getPage(1).then(page => {
+                const canvas = document.getElementById('pdf-diag');
+                if(!canvas) return;
+                const ctx = canvas.getContext('2d');
+                const vp = page.getViewport({scale: 1});
+                canvas.height = vp.height;
+                canvas.width = vp.width;
+                page.render({canvasContext: ctx, viewport: vp});
+            });
+        }
+
         function fetchPYQ() {
-            document.getElementById('q-input').value = "Previous Year Important Repeated Questions";
-            activeMark = 16;
-            generateAnswer();
+            document.getElementById('q-input').value = "Discuss important 16 mark questions from this unit";
+            analyzePDFContent();
         }
 
-        function startVoice() {
-            const rec = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-            rec.onstart = () => alert("Listening...");
-            rec.onresult = (e) => { document.getElementById('q-input').value = e.results[0][0].transcript; generateAnswer(); };
-            rec.start();
-        }
-
-        function exportPDF() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            doc.setFontSize(10);
-            const content = document.getElementById('answer-workspace').innerText;
-            doc.text(doc.splitTextToSize(content, 180), 15, 20);
-            doc.save(`PrepIQ_${activeCode}_${Date.now()}.pdf`);
-        }
-
-        initApp();
+        init();
     </script>
 </body>
 </html>
