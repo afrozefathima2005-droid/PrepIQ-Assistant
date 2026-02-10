@@ -116,8 +116,8 @@
         Object.keys(syllabus).forEach(code => {
             const btn = document.createElement('button');
             btn.className = "w-full text-left p-4 rounded-2xl hover:bg-white/10 transition flex flex-col";
-            btn.id = `btn-${code}`;
-            btn.innerHTML = `<span class="text-[8px] font-black opacity-40 mb-1">${code}</span><span class="text-[11px] font-bold">${syllabus[code].name}</span>`;
+            btn.id = btn-${code};
+            btn.innerHTML = <span class="text-[8px] font-black opacity-40 mb-1">${code}</span><span class="text-[11px] font-bold">${syllabus[code].name}</span>;
             btn.onclick = () => selectSub(code);
             menu.appendChild(btn);
         });
@@ -125,9 +125,9 @@
         function selectSub(code) {
             activeCode = code;
             document.querySelectorAll('#subject-menu button').forEach(b => b.classList.remove('active-sub'));
-            document.getElementById(`btn-${code}`).classList.add('active-sub');
+            document.getElementById(btn-${code}).classList.add('active-sub');
             document.getElementById('header-name').innerText = syllabus[code].name;
-            document.getElementById('header-code').innerText = `Syncing Drive Data for ${code} | Regulation 2021`;
+            document.getElementById('header-code').innerText = Syncing Drive Data for ${code} | Regulation 2021;
 
             const grid = document.getElementById('syllabus-grid');
             grid.innerHTML = "";
@@ -151,7 +151,7 @@
             const q = document.getElementById('q-input').value;
             if(!q) return;
             const workspace = document.getElementById('answer-workspace');
-            workspace.innerHTML = `<div class="animate-pulse py-20 text-center font-black text-blue-800 uppercase">Extracting Content from Drive Folder: 19fR12t1U... and Writing Answer...</div>`;
+            workspace.innerHTML = <div class="animate-pulse py-20 text-center font-black text-blue-800 uppercase">Extracting Content from Drive Folder: 19fR12t1U... and Writing Answer...</div>;
 
             setTimeout(() => {
                 let html = `
@@ -229,7 +229,7 @@
             doc.text("PrepIQ Exam Report - Integrated Drive Data", 15, 20);
             doc.setFontSize(10);
             doc.text(doc.splitTextToSize(text, 180), 15, 30);
-            doc.save(`PrepIQ_Analysis_${activeCode}.pdf`);
+            doc.save(PrepIQ_Analysis_${activeCode}.pdf);
         }
     </script>
 </body>
