@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PrepIQ Pro - Ultimate PDF Scanner</title>
+    <title>PrepIQ Pro | Master Exam Engine</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -15,64 +15,66 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Crimson+Pro:wght@400;600;700;800&display=swap');
         body { font-family: 'Inter', sans-serif; background: #f8fafc; overflow: hidden; }
         .exam-sheet { font-family: 'Crimson Pro', serif; line-height: 1.8; color: #1e293b; text-align: justify; font-size: 1.3rem; }
-        .side-heading { color: #1e40af; font-weight: 800; text-transform: uppercase; border-left: 8px solid #1e40af; padding-left: 15px; margin: 35px 0 15px; font-size: 1.6rem; display: block; }
-        .bullet-point { margin-bottom: 12px; padding-left: 35px; position: relative; }
-        .bullet-point::before { content: "⮚"; position: absolute; left: 0; color: #2563eb; font-weight: bold; }
-        canvas { border-radius: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.1); max-width: 100%; height: auto !important; background: white; border: 1px solid #e2e8f0; }
-        .active-sub { background: #1e40af !important; color: white !important; }
-        #sub-menu button:hover { background: rgba(255,255,255,0.1); }
+        .side-heading { color: #1e40af; font-weight: 800; text-transform: uppercase; border-left: 8px solid #1e40af; padding-left: 15px; margin: 35px 0 10px; font-size: 1.5rem; display: block; }
+        canvas { border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); max-width: 100%; height: auto !important; background: white; border: 1px solid #e2e8f0; }
+        .active-sub { background: #2563eb !important; color: white !important; transform: scale(1.02); }
+        .pyq-card { border-left: 6px solid #ea580c; background: #fff7ed; padding: 15px; border-radius: 12px; margin-bottom: 12px; font-weight: 600; font-size: 1.1rem; color: #9a3412; }
     </style>
 </head>
 <body class="h-screen flex">
 
-    <div id="loader" class="hidden absolute inset-0 bg-white/95 z-[100] flex flex-col items-center justify-center">
-        <div class="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
-        <p class="font-black text-slate-800 uppercase tracking-widest text-sm">Deep Scanning PDF Content...</p>
+    <div id="loader" class="hidden absolute inset-0 bg-white/90 z-[100] flex flex-col items-center justify-center">
+        <div class="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+        <p id="loader-text" class="font-black text-slate-800 uppercase tracking-tighter italic">Engine Scanning PDF...</p>
     </div>
 
-    <aside class="w-80 bg-[#0f172a] text-white flex flex-col p-6 shadow-2xl z-50">
-        <div class="flex items-center gap-4 mb-8">
-            <div class="bg-blue-600 p-3 rounded-2xl shadow-lg"><i class="fas fa-brain text-2xl"></i></div>
-            <h1 class="text-xl font-black italic">PrepIQ <span class="text-blue-400 text-[10px] block not-italic font-bold tracking-widest uppercase">Content Engine</span></h1>
+    <aside class="w-72 bg-[#0f172a] text-white flex flex-col p-5 shadow-2xl z-50">
+        <div class="flex items-center gap-3 mb-8">
+            <div class="bg-blue-600 p-2 rounded-xl shadow-lg"><i class="fas fa-microchip text-xl"></i></div>
+            <h1 class="text-lg font-black italic">PrepIQ <span class="text-blue-400 text-[9px] block not-italic font-bold tracking-widest uppercase">Master Engine</span></h1>
         </div>
-        <nav class="flex-1 space-y-1 overflow-y-auto" id="sub-menu"></nav>
-        <div class="mt-4 pt-4 border-t border-slate-700">
-            <button id="auth_btn" onclick="handleAuthClick()" class="w-full bg-blue-700 p-4 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-600 transition">
-                <i class="fab fa-google mr-2"></i> Sync Google Drive
+        
+        <nav class="flex-1 space-y-1 overflow-y-auto pr-2" id="sub-menu"></nav>
+
+        <div class="mt-4 space-y-2 pt-4 border-t border-slate-700">
+            <button onclick="fetchPYQ()" class="w-full bg-orange-600 p-3 rounded-xl text-[10px] font-black uppercase hover:bg-orange-500 transition shadow-lg">
+                <i class="fas fa-history mr-2"></i> Previous Year Questions
+            </button>
+            <button id="auth_btn" onclick="handleAuthClick()" class="w-full bg-blue-700 p-3 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-600 transition">
+                <i class="fab fa-google mr-2"></i> Sync Drive
             </button>
         </div>
     </aside>
 
     <main class="flex-1 flex flex-col relative overflow-hidden bg-white">
-        <header class="p-6 border-b flex justify-between items-center shadow-sm bg-white">
+        <header class="p-5 border-b flex justify-between items-center shadow-sm">
             <div>
-                <h2 id="header-title" class="text-xl font-black text-slate-800 uppercase italic italic">Select Subject</h2>
-                <p id="header-status" class="text-xs font-bold text-blue-500 uppercase tracking-widest">Regulation 2021 | Active PDF Mode</p>
+                <h2 id="header-title" class="text-lg font-black text-slate-800 uppercase italic">Select Subject</h2>
+                <p id="header-status" class="text-[9px] font-bold text-blue-500 uppercase tracking-widest italic">Connection: Offline</p>
             </div>
-            <button onclick="window.print()" class="bg-black text-white px-8 py-3 rounded-2xl text-[10px] font-black uppercase">Export Answer</button>
+            <button onclick="window.print()" class="bg-black text-white px-6 py-2 rounded-xl text-[10px] font-black uppercase">Save as PDF</button>
         </header>
 
-        <div class="flex-1 overflow-y-auto p-12 bg-slate-50" id="main-scroll">
-            <div id="workspace" class="bg-white min-h-[1600px] rounded-[3rem] shadow-2xl p-20 border border-slate-200 exam-sheet">
-                <div class="flex flex-col items-center justify-center h-full py-40 opacity-10 italic">
-                    <i class="fas fa-search-plus text-9xl mb-6"></i>
-                    <p class="text-3xl font-black uppercase tracking-widest">Enter Question to Analyze PDF</p>
+        <div class="flex-1 overflow-y-auto p-10 bg-slate-50" id="main-scroll">
+            <div id="workspace" class="bg-white min-h-[1400px] rounded-[2.5rem] shadow-2xl p-16 border border-slate-200 exam-sheet">
+                <div class="flex flex-col items-center justify-center h-full py-40 opacity-20 italic">
+                    <i class="fas fa-search-plus text-8xl mb-4"></i>
+                    <p class="text-2xl font-black uppercase tracking-widest">Awaiting PDF Content Analysis</p>
                 </div>
             </div>
         </div>
 
-        <footer class="p-8 bg-white border-t flex gap-4 items-center shadow-2xl">
-            <select id="mark-type" class="bg-slate-100 p-5 rounded-3xl font-black text-sm outline-none border-2 border-transparent focus:border-blue-600 transition-all">
+        <footer class="p-6 bg-white border-t flex gap-3 items-center shadow-2xl">
+            <select id="mark-type" class="bg-slate-100 p-4 rounded-2xl font-black text-xs outline-none border-2 border-transparent focus:border-blue-600">
                 <option value="16">16 Marks</option>
                 <option value="2">2 Marks</option>
             </select>
-            <input id="q-input" type="text" placeholder="e.g. Design Thinking Process Stages..." class="flex-1 bg-slate-100 p-6 rounded-3xl font-bold outline-none border-2 border-transparent focus:border-blue-600 shadow-inner">
-            <button onclick="startAnalysis()" class="bg-blue-700 text-white px-14 py-6 rounded-3xl font-black text-sm uppercase tracking-widest hover:scale-105 transition-all shadow-xl">Scan & Write</button>
+            <input id="q-input" type="text" placeholder="Type your question here (e.g. Design Thinking Stages)..." class="flex-1 bg-slate-100 p-4 rounded-2xl font-bold outline-none border-2 border-transparent focus:border-blue-600 shadow-inner">
+            <button onclick="startAnalysis()" class="bg-blue-700 text-white px-10 py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:scale-105 transition-all shadow-xl">Scan & Write</button>
         </footer>
     </main>
 
     <script>
-        // CONFIG - Put your actual keys here
         const API_KEY = 'AIzaSyAUUKecmyrSKsMg-5TWILmeqZYj7IvLhak';
         const CLIENT_ID = '117220129745-80bq3mepsv8nac80d1lsdbv3usb41jp8.apps.googleusercontent.com';
         const FOLDER_ID = '1CAZNHtFM_BiZWX9Z-i5VlYtH0gDHDSJ5';
@@ -88,16 +90,8 @@
 
         let tokenClient, activeCode = "CCS370";
 
-        function gapiLoaded() { 
-            gapi.load('client', () => gapi.client.init({apiKey: API_KEY, discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"]})); 
-        }
-        function gisLoaded() { 
-            tokenClient = google.accounts.oauth2.initTokenClient({
-                client_id: CLIENT_ID, 
-                scope: 'https://www.googleapis.com/auth/drive.readonly', 
-                callback: (r) => { if(!r.error) { document.getElementById('auth_btn').innerText="Synced ✅"; document.getElementById('header-status').innerText="Ready to Read PDF"; }}
-            }); 
-        }
+        function gapiLoaded() { gapi.load('client', () => gapi.client.init({apiKey: API_KEY, discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"]})); }
+        function gisLoaded() { tokenClient = google.accounts.oauth2.initTokenClient({client_id: CLIENT_ID, scope: 'https://www.googleapis.com/auth/drive.readonly', callback: (r) => { if(!r.error) { document.getElementById('auth_btn').innerText="Synced ✅"; document.getElementById('header-status').innerText="Ready to Read PDF"; }}}); }
         function handleAuthClick() { tokenClient.requestAccessToken({prompt: 'consent'}); }
 
         function renderSubMenu() {
@@ -105,96 +99,100 @@
             menu.innerHTML = "";
             Object.keys(syllabus).forEach(code => {
                 const btn = document.createElement('button');
-                btn.className = `w-full text-left p-4 rounded-xl transition-all flex flex-col mb-1 ${activeCode===code?'active-sub':''}`;
-                btn.innerHTML = `<span class="text-[9px] font-black uppercase opacity-60">${code}</span><span class="text-[12px] font-bold">${syllabus[code]}</span>`;
+                btn.className = `w-full text-left p-3 rounded-xl transition-all flex flex-col mb-1 ${activeCode===code?'active-sub':''}`;
+                btn.innerHTML = `<span class="text-[8px] font-black uppercase opacity-60">${code}</span><span class="text-[11px] font-bold">${syllabus[code]}</span>`;
                 btn.onclick = () => { activeCode = code; document.getElementById('header-title').innerText = syllabus[code]; renderSubMenu(); };
                 menu.appendChild(btn);
             });
         }
 
-        async function startAnalysis() {
-            const q = document.getElementById('q-input').value;
-            const mark = document.getElementById('mark-type').value;
-            if(!q) return;
-
+        async function fetchPYQ() {
             document.getElementById('loader').classList.remove('hidden');
-
             try {
                 const res = await gapi.client.drive.files.list({
-                    q: `'${FOLDER_ID}' in parents and name contains '${activeCode}'`,
+                    q: `'${FOLDER_ID}' in parents and name contains 'PYQ' and name contains '${activeCode}'`,
                     fields: "files(id, name)"
                 });
                 const file = res.result.files[0];
-                if(!file) throw new Error("PDF file not found in folder!");
+                if(!file) throw new Error("PYQ PDF not found for this subject!");
 
                 const pdfData = await fetch(`https://www.googleapis.com/drive/v3/files/${file.id}?alt=media`, {
                     headers: { Authorization: `Bearer ${gapi.client.getToken().access_token}` }
                 }).then(r => r.arrayBuffer());
 
                 const pdf = await pdfjsLib.getDocument({data: pdfData}).promise;
-
-                let cleanedText = "";
-                for(let i=1; i<=Math.min(pdf.numPages, 10); i++) {
+                let text = "";
+                for(let i=1; i<=Math.min(pdf.numPages, 3); i++) {
                     const page = await pdf.getPage(i);
                     const content = await page.getTextContent();
-                    const raw = content.items.map(s => s.str).join(" ");
-                    // REMOVES WATERMARKS & ADS
-                    cleanedText += raw.replace(/EnggTree\.com|Downloaded from|Reg\. No\./gi, "") + " ";
+                    text += content.items.map(s => s.str).join(" ");
                 }
-
-                renderResult(q, mark, cleanedText, pdf);
-            } catch(e) {
-                alert("Scan Error: " + e.message);
-            } finally {
-                document.getElementById('loader').classList.add('hidden');
-            }
+                const questions = text.split(/(?=\d+\.)/).filter(q => q.length > 20);
+                document.getElementById('workspace').innerHTML = `<h1 class="text-3xl font-black mb-6 uppercase border-b-4 border-orange-600 pb-2">Previous Year Questions</h1><div class="space-y-3">${questions.map(q => `<div class="pyq-card">${q.replace(/EnggTree\.com|Downloaded from/gi, "")}</div>`).join('')}</div>`;
+            } catch(e) { alert(e.message); }
+            finally { document.getElementById('loader').classList.add('hidden'); }
         }
 
-        function renderResult(q, mark, text, pdf) {
-            const workspace = document.getElementById('workspace');
-            
-            // Adjust length based on Marks
-            const introEnd = mark === "16" ? 1000 : 500;
-            const bodyEnd = mark === "16" ? 4500 : 1500;
+        async function startAnalysis() {
+            const q = document.getElementById('q-input').value;
+            const marks = document.getElementById('mark-type').value;
+            if(!q) return;
+            document.getElementById('loader').classList.remove('hidden');
 
-            const intro = text.substring(0, introEnd);
-            const body = text.substring(introEnd, bodyEnd);
+            try {
+                const res = await gapi.client.drive.files.list({
+                    q: `'${FOLDER_ID}' in parents and name contains '${activeCode}' and not name contains 'PYQ'`,
+                    fields: "files(id, name)"
+                });
+                const file = res.result.files[0];
+                if(!file) throw new Error("Subject Notes PDF not found!");
 
-            workspace.innerHTML = `
-                <div class="border-b-8 border-black pb-4 mb-10">
-                    <h1 class="text-5xl font-black uppercase tracking-tighter italic">${q}</h1>
-                    <p class="text-blue-600 font-bold mt-2 uppercase tracking-widest italic">Source: ${activeCode} PDF Notes</p>
+                const pdfData = await fetch(`https://www.googleapis.com/drive/v3/files/${file.id}?alt=media`, {
+                    headers: { Authorization: `Bearer ${gapi.client.getToken().access_token}` }
+                }).then(r => r.arrayBuffer());
+
+                const pdf = await pdfjsLib.getDocument({data: pdfData}).promise;
+                let fullText = "", diagPage = 1;
+
+                for(let i=1; i<=pdf.numPages; i++) {
+                    const page = await pdf.getPage(i);
+                    const content = await page.getTextContent();
+                    const pageStr = content.items.map(s => s.str).join(" ");
+                    fullText += pageStr.replace(/EnggTree\.com|Downloaded from/gi, "") + " ";
+                    // Simple logic to find diagram related to question
+                    if(pageStr.toLowerCase().includes(q.toLowerCase().split(' ')[0])) diagPage = i;
+                }
+                renderFinalResult(q, marks, fullText, pdf, diagPage);
+            } catch(e) { alert(e.message); }
+            finally { document.getElementById('loader').classList.add('hidden'); }
+        }
+
+        function renderFinalResult(q, m, text, pdf, dp) {
+            const ws = document.getElementById('workspace');
+            const limit = m === "16" ? 5000 : 1200;
+            const content = text.substring(0, limit);
+
+            ws.innerHTML = `
+                <div class="border-b-4 border-black pb-4 mb-8">
+                    <h1 class="text-4xl font-black uppercase italic">${q}</h1>
                 </div>
-
-                <span class="side-heading">I. Technical Definition</span>
-                <p>${intro}</p>
-
-                <span class="side-heading">II. Visual Process Diagram</span>
-                <div class="flex flex-col items-center p-10 bg-slate-50 border-2 border-dashed border-slate-300 rounded-[3rem] my-10">
+                <span class="side-heading">I. Definition & Concept</span>
+                <p>${content.substring(0, 800)}...</p>
+                <span class="side-heading">II. Technical Diagram / Architecture</span>
+                <div class="flex flex-col items-center p-8 bg-slate-50 border-2 border-dashed border-slate-300 rounded-[2rem] my-8">
                     <canvas id="pdf-diag"></canvas>
-                    <p class="mt-6 text-[10px] font-black text-slate-400 uppercase tracking-widest italic">Fig: Functional Workflow extracted from PDF Page 1</p>
                 </div>
-
-                <span class="side-heading">III. Detailed Elaboration (${mark} Marks)</span>
-                <div class="space-y-6">
-                    <p>${body.substring(0, body.length/2)}</p>
-                    <div class="bullet-point"><strong>Implementation Logic:</strong> Extracted from Regulation 2021 standards.</div>
-                    <p>${body.substring(body.length/2)}</p>
-                </div>
-
-                <span class="side-heading">IV. Summary</span>
-                <p>The above content for "${q}" is verified against the official syllabus notes for ${syllabus[activeCode]}.</p>
+                <span class="side-heading">III. Detailed Explanation (${m} Marks)</span>
+                <p>${content.substring(800)}</p>
             `;
 
-            // EXTRACT REAL DIAGRAM FROM PAGE 1
-            pdf.getPage(1).then(page => {
+            pdf.getPage(dp).then(page => {
                 const canvas = document.getElementById('pdf-diag');
                 const ctx = canvas.getContext('2d');
-                const vp = page.getViewport({scale: 1.5});
+                const vp = page.getViewport({scale: 1.3});
                 canvas.height = vp.height; canvas.width = vp.width;
                 page.render({canvasContext: ctx, viewport: vp});
             });
-
             document.getElementById('main-scroll').scrollTo({top:0, behavior:'smooth'});
         }
 
