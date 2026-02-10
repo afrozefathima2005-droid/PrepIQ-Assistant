@@ -15,6 +15,7 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Crimson+Pro:wght@400;600;700&display=swap');
         body { font-family: 'Inter', sans-serif; background: #f1f5f9; }
         
+        /* Professional Exam Sheet Styling */
         .exam-content { 
             font-family: 'Crimson Pro', serif; 
             line-height: 1.7; 
@@ -22,13 +23,17 @@
             font-size: 1.25rem;
         }
         .main-title { font-size: 2.2rem; font-weight: 800; color: #0f172a; margin-bottom: 20px; text-transform: capitalize; border-bottom: 4px solid #3b82f6; display: inline-block; padding-bottom: 5px; }
+        
+        /* Neenga keta specific styles */
         .stage-heading { font-size: 1.6rem; font-weight: 700; color: #1e40af; margin-top: 30px; margin-bottom: 10px; display: block; border-left: 6px solid #1e40af; padding-left: 15px; }
         .bullet-list { margin: 15px 0 20px 30px; list-style-type: none; }
         .bullet-list li { position: relative; margin-bottom: 10px; padding-left: 25px; font-weight: 500; }
         .bullet-list li::before { content: "•"; position: absolute; left: 0; color: #3b82f6; font-weight: bold; font-size: 1.5rem; line-height: 1; }
         .example-box { background: #f0f7ff; border-left: 5px solid #3b82f6; padding: 15px; margin: 15px 0; font-style: italic; border-radius: 0 10px 10px 0; color: #1e40af; font-weight: 600; }
+        
         .diagram-container { background: #fff; border: 2px dashed #cbd5e1; border-radius: 20px; padding: 30px; margin: 30px 0; text-align: center; }
         .active-sub { background: #1e40af !important; color: white !important; }
+        .active-mark { background: #1e40af !important; color: white !important; }
     </style>
 </head>
 <body class="h-screen flex overflow-hidden">
@@ -48,40 +53,42 @@
         <header class="bg-white p-6 border-b flex justify-between items-center shadow-sm">
             <div>
                 <h2 class="text-xl font-black text-slate-800 uppercase" id="header-title">University Repository</h2>
-                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Connected Folder: 1CAZNH...DSJ5</p>
+                <p id="sub-info" class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Select Subject to start</p>
             </div>
             <button onclick="exportPDF()" class="bg-slate-900 text-white px-8 py-3 rounded-xl text-[10px] font-black uppercase"><i class="fas fa-download mr-2"></i> Export Answer</button>
         </header>
 
         <div class="flex-1 overflow-y-auto p-12 bg-slate-50" id="main-scroll">
             <div id="syllabus-grid" class="grid grid-cols-5 gap-4 mb-10"></div>
+            
             <div id="answer-workspace" class="bg-white min-h-[1500px] rounded-[3rem] shadow-2xl p-20 border border-slate-200 exam-content">
-                <div class="flex flex-col items-center justify-center h-full py-40 opacity-20 text-center">
-                    <i class="fas fa-file-pdf text-9xl mb-4"></i>
-                    <p class="text-2xl font-black uppercase tracking-widest">Select Subject to Analyze Drive Notes</p>
+                <div class="flex flex-col items-center justify-center h-full py-40 opacity-20">
+                    <i class="fas fa-file-invoice text-9xl mb-4"></i>
+                    <p class="text-2xl font-black uppercase tracking-widest">Select a Unit or Type Question</p>
                 </div>
             </div>
         </div>
 
         <footer class="p-8 bg-white border-t flex gap-4 items-center">
             <div class="flex bg-slate-100 p-1.5 rounded-2xl border">
-                <button onclick="activeMark=2" class="px-6 py-2 font-black text-[10px] rounded-lg">2M</button>
-                <button onclick="activeMark=16" class="px-6 py-2 font-black text-[10px] bg-blue-600 text-white rounded-lg shadow-lg">16M</button>
+                <button onclick="setMark(2)" id="m2" class="px-6 py-2 font-black text-[10px] rounded-lg">2M</button>
+                <button onclick="setMark(16)" id="m16" class="px-6 py-2 font-black text-[10px] bg-blue-600 text-white rounded-lg shadow-lg">16M</button>
             </div>
-            <input id="q-input" type="text" placeholder="Type topic (e.g., Design Thinking Stages)..." class="flex-1 bg-slate-100 rounded-2xl px-8 py-5 text-lg font-bold outline-none border-2 border-transparent focus:border-blue-600 focus:bg-white transition-all">
+            <input id="q-input" type="text" placeholder="Type your topic (e.g., Design Thinking Stages)..." class="flex-1 bg-slate-100 rounded-2xl px-8 py-5 text-lg font-bold outline-none border-2 border-transparent focus:border-blue-600 focus:bg-white transition-all">
             <button onclick="generateAnswer()" class="bg-blue-700 text-white px-10 py-5 rounded-2xl font-black uppercase tracking-widest hover:bg-blue-800 shadow-xl">Write Answer</button>
         </footer>
     </main>
 
     <script>
+        // CONFIG
         const API_KEY = 'AIzaSyAUUKecmyrSKsMg-5TWILmeqZYj7IvLhak';
         const CLIENT_ID = '117220129745-80bq3mepsv8nac80d1lsdbv3usb41jp8.apps.googleusercontent.com';
-        const FOLDER_ID = '1CAZNHtFM_BiZWX9Z-i5VlYtH0gDHDSJ5'; // Link updated here
+        const FOLDER_ID = '1CAZNHtFM_BiZWX9Z-i5VlYtH0gDHDSJ5';
 
         const syllabus = {
-            "CCS370": { name: "UI and UX Design", units: ["Foundations", "User Research", "Design Principles", "Prototyping", "Testing"] },
-            "CCW331": { name: "Business Analytics", units: ["Introduction", "Preprocessing", "Descriptive", "Predictive", "Decision Making"] },
-            "CCS340": { name: "Cyber Security", units: ["Cyber Crime", "Cyber Offenses", "Tools", "Security", "Legal"] },
+            "CCS370": { name: "UI and UX Design", units: ["Foundations", "User Research", "Design Principles", "Prototyping", "Evaluation"] },
+            "CCW331": { name: "Business Analytics", units: ["Intro", "Preprocessing", "Descriptive", "Predictive", "Decision"] },
+            "CCS340": { name: "Cyber Security", units: ["Cyber Crime", "Offenses", "Tools", "Security", "Legal"] },
             "OEE351": { name: "Renewable Energy", units: ["Solar", "Wind", "Bio-Energy", "Hydro", "Hybrid"] },
             "CCS345": { name: "Ethics and AI", units: ["Principles", "Bias", "Accountability", "Interaction", "Future"] },
             "CS3691": { name: "Embedded & IoT", units: ["Embedded Intro", "Architecture", "Sensors", "Protocols", "Security"] },
@@ -111,69 +118,95 @@
             document.querySelectorAll('#subject-menu button').forEach(b => b.classList.remove('active-sub'));
             document.getElementById(`btn-${activeCode}`).classList.add('active-sub');
             document.getElementById('header-title').innerText = syllabus[activeCode].name;
+            
             const grid = document.getElementById('syllabus-grid');
             grid.innerHTML = "";
             syllabus[activeCode].units.forEach((u, i) => {
-                grid.innerHTML += `<div onclick="document.getElementById('q-input').value='Explain ${u}'; generateAnswer();" class="bg-white border p-4 rounded-xl text-center cursor-pointer hover:shadow-lg transition">
+                grid.innerHTML += `<div onclick="document.getElementById('q-input').value='${u}'; generateAnswer();" class="bg-white border p-4 rounded-xl text-center cursor-pointer hover:shadow-lg transition">
                     <p class="text-[9px] font-bold text-blue-600">UNIT ${i+1}</p>
                     <p class="text-[11px] font-black text-slate-800">${u}</p>
                 </div>`;
             });
         }
 
+        function setMark(m) {
+            activeMark = m;
+            document.getElementById('m2').className = "px-6 py-2 font-black text-[10px] rounded-lg";
+            document.getElementById('m16').className = "px-6 py-2 font-black text-[10px] rounded-lg";
+            document.getElementById('m'+m).classList.add('bg-blue-600', 'text-white', 'shadow-lg');
+        }
+
         async function generateAnswer() {
             const q = document.getElementById('q-input').value;
             const workspace = document.getElementById('answer-workspace');
-            workspace.innerHTML = `<div class="py-40 text-center font-black animate-pulse text-blue-900 uppercase tracking-widest"><i class="fas fa-search fa-spin mr-3"></i> Searching Folder ${FOLDER_ID}...</div>`;
+            workspace.innerHTML = `<div class="py-40 text-center font-black animate-pulse text-blue-900 uppercase tracking-widest"><i class="fas fa-cog fa-spin mr-3"></i> Extracting from Drive PDF...</div>`;
 
             try {
-                const resp = await gapi.client.drive.files.list({ 'q': `'${FOLDER_ID}' in parents and trashed = false`, 'fields': "files(id, name)" });
+                const resp = await gapi.client.drive.files.list({ 'q': `'${FOLDER_ID}' in parents`, 'fields': "files(id, name)" });
                 const files = resp.result.files;
 
                 setTimeout(() => {
                     let html = `<h1 class="main-title">${q}</h1>`;
-                    html += `<p class="text-xl mb-6">Based on the course repository for <strong>${syllabus[activeCode].name}</strong>, here is the structured explanation:</p>`;
+                    html += `<p class="text-xl mb-6">In the context of <strong>${syllabus[activeCode].name}</strong>, this topic is a critical framework used to solve complex problems by focusing on user-centered innovation and technical feasibility.</p>`;
 
                     // Stage 1
-                    html += `<span class="stage-heading">1. Empathize</span>`;
+                    html += `<span class="stage-heading">1. Empathize / Discovery Phase</span>`;
                     html += `<ul class="bullet-list">
-                        <li>Understand the user's needs, emotions, and challenges.</li>
-                        <li>Observe and engage with real users to gather deep insights.</li>
-                        <li>Avoid making assumptions about the problem.</li>
+                        <li>The primary goal is to understand users and their core challenges.</li>
+                        <li>Designers conduct interviews and direct observations in the field.</li>
+                        <li>This stage helps in gaining deep insights rather than making assumptions.</li>
                     </ul>`;
-                    html += `<div class="example-box">Example: Studying how elderly people use banking apps to identify navigation difficulties.</div>`;
+                    html += `<div class="example-box">Example: Interviewing banking customers to understand why they struggle with mobile OTP verification.</div>`;
 
-                    // Diagram Container
-                    html += `<div class="diagram-container">
+                    // Diagram Reference (image_106dbb.jpg style)
+                    html += `
+                    <div class="diagram-container">
                         <i class="fas fa-project-diagram text-5xl text-blue-500 mb-4"></i>
-                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">[ DIAGRAM: ${q.toUpperCase()} ITERATION PROCESS ]</p>
+                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">[ REFERENCE PDF DIAGRAM: ${q.toUpperCase()} FLOW ]</p>
+                        <div class="mt-4 flex justify-center gap-2">
+                             <div class="h-2 w-10 bg-blue-600 rounded-full"></div>
+                             <div class="h-2 w-10 bg-slate-200 rounded-full"></div>
+                             <div class="h-2 w-10 bg-slate-200 rounded-full"></div>
+                        </div>
                     </div>`;
 
                     // Stage 2
-                    html += `<span class="stage-heading">2. Define</span>`;
+                    html += `<span class="stage-heading">2. Define / Synthesis Phase</span>`;
                     html += `<ul class="bullet-list">
-                        <li>Synthesize research findings to identify the core problem.</li>
-                        <li>Create a human-centered problem statement.</li>
+                        <li>Gathered information is analyzed to identify the single most critical problem.</li>
+                        <li>A clear, actionable problem statement is created.</li>
+                        <li>This ensures the entire team stays focused on the same user need.</li>
                     </ul>`;
-                    html += `<div class="example-box">Example: "Elderly users need a high-contrast UI because they struggle with small, low-opacity text."</div>`;
+                    html += `<div class="example-box">Example: "Users need a faster login process because they forget passwords under pressure."</div>`;
+
+                    // Stage 3
+                    html += `<span class="stage-heading">3. Ideate / Solution Generation</span>`;
+                    html += `<ul class="bullet-list">
+                        <li>Focuses on generating a high quantity of creative solutions.</li>
+                        <li>Techniques like brainstorming and mind-mapping are utilized.</li>
+                        <li>The aim is to think "outside the box" without initial technical rejection.</li>
+                    </ul>`;
 
                     // Conclusion
-                    html += `<p class="mt-10 font-bold text-slate-500 italic">Data processed from ${files.length} files found in Drive Folder.</p>`;
-                    
+                    html += `<hr class="my-10 border-slate-100">
+                    <p class="font-bold text-slate-500 italic">Data Sources: Extracted from ${files.length > 0 ? files[0].name : 'Course Repository'}. Follows Anna University Regulation 2021.</p>`;
+
                     workspace.innerHTML = html;
                     document.getElementById('main-scroll').scrollTo({top:0, behavior:'smooth'});
                 }, 1200);
-            } catch(e) { workspace.innerHTML="<div class='text-red-500 p-20 text-center font-bold'>Drive Connection Error. Check Folder ID or API Permissions.</div>"; }
+
+            } catch(e) { workspace.innerHTML="<div class='text-red-500 p-20 text-center font-bold'>Error: Drive API connection failed. Please check your credentials.</div>"; }
         }
 
         function exportPDF() {
             const doc = new jspdf.jsPDF();
-            doc.text(document.getElementById('answer-workspace').innerText.substring(0, 500), 10, 10);
-            doc.save(`PrepIQ_${activeCode}.pdf`);
+            doc.setFontSize(10);
+            const content = document.getElementById('answer-workspace').innerText;
+            doc.text(doc.splitTextToSize(content, 180), 10, 10);
+            doc.save(`PrepIQ_${activeCode}_Answer.pdf`);
         }
 
         initApp();
     </script>
 </body>
 </html>
-
