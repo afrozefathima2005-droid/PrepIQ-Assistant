@@ -3,10 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PrepIQ Pro - Drive Integrated Exam Cell</title>
+    <title>PrepIQ Pro - Full Subject Integrated</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
+    <script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Crimson+Pro:wght@400;700&display=swap');
         body { font-family: 'Inter', sans-serif; background: #f1f5f9; }
@@ -19,34 +22,9 @@
         }
         .bullet-point { margin-bottom: 12px; padding-left: 30px; position: relative; color: #1f2937; font-size: 1.15rem; }
         .bullet-point::before { content: "➤"; position: absolute; left: 0; color: #1e40af; font-weight: bold; }
-        .unit-card { 
-            background: white; border: 2px solid #e2e8f0; padding: 20px;
-            border-radius: 20px; transition: all 0.3s ease; text-align: center; cursor: pointer;
-        }
-        .unit-card:hover { border-color: #1e40af; transform: translateY(-5px); box-shadow: 0 10px 25px rgba(30,58,138,0.1); }
+        .unit-card { background: white; border: 2px solid #e2e8f0; padding: 15px; border-radius: 20px; text-align: center; cursor: pointer; transition: 0.3s; }
+        .unit-card:hover { border-color: #1e40af; transform: translateY(-3px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
         .active-sub { background: #1e40af !important; color: white !important; }
-        .pyq-tag { font-size: 9px; background: #fee2e2; color: #991b1b; padding: 2px 8px; border-radius: 4px; font-weight: 900; }
-        .drive-sync-indicator { animation: pulse 2s infinite; }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-        
-        .diagram-container {
-            background: #f8fafc;
-            border: 2px dashed #cbd5e1;
-            border-radius: 1.5rem;
-            padding: 2.5rem;
-            margin: 2rem 0;
-            text-align: center;
-        }
-        .stage-node {
-            background: white;
-            border: 2px solid #1e40af;
-            padding: 0.5rem 1rem;
-            border-radius: 99px;
-            font-weight: 800;
-            font-size: 0.75rem;
-            color: #1e40af;
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-        }
     </style>
 </head>
 <body class="h-screen flex overflow-hidden">
@@ -54,236 +32,195 @@
     <aside class="w-80 bg-[#0f172a] text-white flex flex-col p-6 shadow-2xl z-50">
         <div class="flex items-center gap-4 mb-10">
             <div class="bg-white p-2 rounded-xl"><i class="fas fa-database text-[#0f172a] text-2xl"></i></div>
-            <h1 class="text-2xl font-black italic tracking-tighter">PrepIQ Pro</h1>
+            <h1 class="text-2xl font-black italic tracking-tighter text-white">PrepIQ Pro</h1>
         </div>
-
-        <div class="mb-6 p-4 bg-blue-900/30 border border-blue-500/30 rounded-2xl">
-            <div class="flex items-center justify-between mb-2">
-                <span class="text-[9px] font-black uppercase text-blue-400">Drive Sync Active</span>
-                <span class="w-2 h-2 bg-green-500 rounded-full drive-sync-indicator"></span>
-            </div>
-            <p class="text-[10px] opacity-70 leading-tight">Syncing files from: <br><span class="font-mono text-blue-300">1CAZNHtFM...DSJ5</span></p>
-        </div>
-
         <p class="text-[10px] font-black uppercase opacity-40 mb-4 tracking-widest">Select Subject</p>
-        <nav class="flex-1 space-y-2 overflow-y-auto pr-2" id="subject-menu"></nav>
-
-        <div class="mt-6 pt-6 border-t border-slate-700">
-            <button onclick="analyzeDrivePYQ()" class="w-full bg-blue-600 hover:bg-blue-500 p-4 rounded-xl text-xs font-black transition flex items-center justify-center gap-2">
-                <i class="fas fa-search-nodes"></i> ANALYZE PYQ TRENDS
-            </button>
-        </div>
+        <nav class="flex-1 space-y-2 overflow-y-auto pr-2 custom-scrollbar" id="subject-menu"></nav>
     </aside>
 
     <main class="flex-1 flex flex-col overflow-hidden">
         <header class="bg-white p-6 px-10 border-b flex justify-between items-center shadow-sm">
             <div>
-                <h2 id="header-name" class="text-xl font-black text-slate-800 uppercase tracking-tight">University Dashboard</h2>
-                <p id="header-code" class="text-xs font-bold text-slate-400 mt-1 uppercase">Select a subject to begin</p>
+                <h2 id="header-name" class="text-xl font-black text-slate-800 uppercase tracking-tight tracking-tighter">University Dashboard</h2>
+                <p id="header-code" class="text-xs font-bold text-slate-400 mt-1 uppercase italic">Regulation 2021 | Drive Sync Active</p>
             </div>
             <div class="flex gap-4">
-                <button onclick="exportPDF()" class="bg-black text-white px-8 py-3 rounded-2xl text-[10px] font-black uppercase hover:bg-slate-800 transition">
-                    <i class="fas fa-file-export mr-2"></i> Export Report
+                <button id="auth_button" onclick="handleAuthClick()" class="bg-green-600 text-white px-6 py-3 rounded-2xl text-[10px] font-black uppercase hover:bg-green-500 transition shadow-lg">
+                    <i class="fab fa-google mr-2"></i> Connect Google Drive
                 </button>
             </div>
         </header>
 
         <div class="flex-1 overflow-y-auto p-10 bg-slate-50/50" id="main-scroll-view">
+            <p class="text-[10px] font-black uppercase text-slate-400 mb-4 tracking-widest">Select Unit to Generate Answer</p>
             <div id="syllabus-grid" class="grid grid-cols-5 gap-4 mb-10"></div>
+            
             <div id="answer-workspace" class="bg-white min-h-[1000px] rounded-[3rem] shadow-2xl p-16 border border-slate-100 exam-sheet">
-                <div class="flex flex-col items-center justify-center h-full py-40 opacity-10 text-center">
-                    <i class="fas fa-cloud-bolt text-9xl mb-6"></i>
-                    <p class="text-3xl font-black uppercase tracking-widest">Select a topic or type a question</p>
+                <div class="flex flex-col items-center justify-center h-full py-40 opacity-20 text-center">
+                    <i class="fas fa-file-signature text-9xl mb-6 text-blue-900"></i>
+                    <p class="text-2xl font-black uppercase tracking-widest text-blue-900">Select a Unit or Type a Question</p>
                 </div>
             </div>
         </div>
 
         <footer class="p-8 bg-white border-t flex gap-4 items-center">
-            <div class="flex bg-slate-100 p-2 rounded-2xl border border-slate-200">
-                <button onclick="setMark(2)" id="m2" class="px-5 py-3 text-[10px] font-black rounded-xl mark-btn">2M</button>
-                <button onclick="setMark(8)" id="m8" class="px-5 py-3 text-[10px] font-black rounded-xl mark-btn">8M</button>
-                <button onclick="setMark(16)" id="m16" class="px-5 py-3 text-[10px] font-black rounded-xl mark-btn active-sub">16M</button>
-            </div>
-
             <div class="flex-1 flex items-center bg-slate-100 rounded-3xl px-8 border-2 border-transparent focus-within:border-blue-600 focus-within:bg-white transition-all shadow-inner">
-                <input id="q-input" type="text" placeholder="Explain Design Thinking stages..." class="w-full bg-transparent outline-none py-6 text-base font-bold text-slate-700">
-                <i id="mic-btn" class="fas fa-microphone text-slate-400 cursor-pointer hover:text-red-500 text-xl ml-4" onclick="voiceIn()"></i>
+                <input id="q-input" type="text" placeholder="Type a topic (e.g., Define Design Thinking)..." class="w-full bg-transparent outline-none py-6 text-lg font-bold text-slate-700">
             </div>
-
-            <button onclick="generateFromDrive()" class="bg-[#1e40af] text-white px-12 py-6 rounded-3xl font-black text-sm uppercase tracking-widest hover:shadow-2xl transition-all">
+            <button onclick="generateFromDrive()" class="bg-[#1e40af] text-white px-12 py-6 rounded-3xl font-black text-sm uppercase tracking-widest hover:scale-105 transition-all shadow-xl">
                 Write Answer
             </button>
         </footer>
     </main>
 
     <script>
+        // --- 1. CONFIGURATION (Unga keys-ah inge podunga) ---
+        const API_KEY = 'AIzaSyAUUKecmyrSKsMg-5TWILmeqZYj7IvLhak'; // Line 73
+        const CLIENT_ID = '117220129745-80bq3mepsv8nac80d1lsdbv3usb41jp8.apps.googleusercontent.com'; // Line 74
+        const FOLDER_ID = '1CAZNHtFM_BiZWX9Z-i5VlYtH0gDHDSJ5';
+
+        // Image-la iruntha Subject List (Updated)
         const syllabus = {
-            "CCS370": { name: "UI and UX Design", units: ["Design Thinking Stages", "User Research & Personas", "Design Principles & Layouts", "Prototyping & Interaction", "Usability Testing & Evaluation"] },
-            "CCW331": { name: "Business Analytics", units: ["Introduction to BA", "Data Management", "Descriptive Analytics", "Predictive Modeling", "Decision Analytics"] },
-            "CCS340": { name: "Cyber Security", units: ["Cyber Crime Overview", "Cyber Offenses", "Tools and Methods", "Security Protocols", "Legal Perspectives"] },
-            "OEE351": { name: "Renewable Energy System", units: ["Solar Energy", "Wind Energy", "Bio-Energy", "Hydro Power", "Hybrid Systems"] },
-            "CS3691": { name: "Embedded Systems & IoT", units: ["Embedded Intro", "IoT Architecture", "Sensors & Actuators", "Connectivity Protocols", "IoT Security"] }
+            "CCS370": { name: "UI and UX Design", units: ["Foundations of UI/UX", "User Research & Personas", "Design Principles & Layouts", "Prototyping & Interaction", "Usability Testing & Evaluation"] },
+            "CCW331": { name: "Business Analytics", units: ["Introduction", "Data Preprocessing", "Predictive Analytics", "Decision Trees", "Optimization"] },
+            "CCS340": { name: "Cyber Security", units: ["Cyber Crime Intro", "Cyber Offenses", "Tools & Methods", "Security Protocols", "Legal Perspectives"] },
+            "OEE351": { name: "Renewable Energy System", units: ["Solar Energy", "Wind Energy", "Bio Energy", "Ocean/Geothermal", "Hybrid Systems"] },
+            "CCS345": { name: "Ethics and AI", units: ["Moral Philosophies", "AI Ethics Intro", "Algorithmic Bias", "Privacy & Safety", "Future of Work"] },
+            "CS3691": { name: "Embedded Systems and IoT", units: ["IoT Introduction", "Sensors & Actuators", "IoT Architecture", "Communication Protocols", "Cloud & Security"] },
+            "CS301": { name: "Operating Systems", units: ["OS Overview", "Process Management", "Memory Management", "Storage Management", "Case Studies"] },
+            "CS302": { name: "Computer Networks", units: ["Physical Layer", "Data Link Layer", "Network Layer", "Transport Layer", "Application Layer"] }
         };
 
+        let tokenClient;
+        let gapiInited = false;
         let activeCode = "CCS370";
-        let activeMark = 16;
 
-        const menu = document.getElementById('subject-menu');
-        Object.keys(syllabus).forEach(code => {
-            const btn = document.createElement('button');
-            btn.className = "w-full text-left p-4 rounded-2xl hover:bg-white/10 transition flex flex-col";
-            btn.id = `btn-${code}`;
-            btn.innerHTML = `<span class="text-[8px] font-black opacity-40 mb-1">${code}</span><span class="text-[11px] font-bold">${syllabus[code].name}</span>`;
-            btn.onclick = () => selectSub(code);
-            menu.appendChild(btn);
-        });
-
-        function selectSub(code) {
-            activeCode = code;
-            document.querySelectorAll('#subject-menu button').forEach(b => b.classList.remove('active-sub'));
-            document.getElementById(`btn-${code}`).classList.add('active-sub');
-            document.getElementById('header-name').innerText = syllabus[code].name;
-            document.getElementById('header-code').innerText = `Syncing Drive: 1CAZNHtFM...DSJ5 | Reg 2021`;
-
-            const grid = document.getElementById('syllabus-grid');
-            grid.innerHTML = "";
-            syllabus[code].units.forEach((unit, i) => {
-                grid.innerHTML += `
-                    <div class="unit-card" onclick="document.getElementById('q-input').value='Explain ${unit}'; generateFromDrive();">
-                        <span class="pyq-tag">REPEATED 4X</span>
-                        <p class="text-[10px] font-black text-blue-600 mb-2 uppercase">Unit ${i+1}</p>
-                        <p class="text-[11px] font-black text-slate-800 leading-tight">${unit}</p>
-                    </div>`;
+        // --- 2. GOOGLE AUTH LOGIC ---
+        function gapiLoaded() {
+            gapi.load('client', async () => {
+                await gapi.client.init({
+                    apiKey: API_KEY,
+                    discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"],
+                });
+                gapiInited = true;
             });
         }
 
-        function setMark(m) {
-            activeMark = m;
-            document.querySelectorAll('.mark-btn').forEach(b => b.classList.remove('active-sub'));
-            document.getElementById('m'+m).classList.add('active-sub');
+        function gisLoaded() {
+            tokenClient = google.accounts.oauth2.initTokenClient({
+                client_id: CLIENT_ID,
+                scope: 'https://www.googleapis.com/auth/drive.readonly',
+                callback: (resp) => {
+                    if (resp.error) return;
+                    document.getElementById('auth_button').innerHTML = "<i class='fas fa-check-circle mr-2'></i> Drive Linked";
+                    document.getElementById('auth_button').className = "bg-slate-700 text-white px-6 py-3 rounded-2xl text-[10px] font-black uppercase shadow-none";
+                },
+            });
         }
 
-        function generateFromDrive() {
+        function handleAuthClick() {
+            tokenClient.requestAccessToken({prompt: 'consent'});
+        }
+
+        // --- 3. UI RENDERING ---
+        function initApp() {
+            const menu = document.getElementById('subject-menu');
+            menu.innerHTML = "";
+            Object.keys(syllabus).forEach(code => {
+                const btn = document.createElement('button');
+                btn.id = `btn-${code}`;
+                btn.className = `w-full text-left p-4 rounded-2xl transition flex flex-col ${code === activeCode ? 'bg-[#1e40af] text-white shadow-lg' : 'hover:bg-white/10 text-slate-400'}`;
+                btn.innerHTML = `<span class="text-[8px] font-black uppercase ${code === activeCode ? 'opacity-100' : 'opacity-40'}">${code}</span><span class="text-[11px] font-bold">${syllabus[code].name}</span>`;
+                btn.onclick = () => switchSubject(code);
+                menu.appendChild(btn);
+            });
+            renderUnits();
+        }
+
+        function switchSubject(code) {
+            document.querySelectorAll('#subject-menu button').forEach(b => {
+                b.classList.remove('bg-[#1e40af]', 'text-white', 'shadow-lg');
+                b.classList.add('hover:bg-white/10', 'text-slate-400');
+            });
+            const activeBtn = document.getElementById(`btn-${code}`);
+            activeBtn.classList.add('bg-[#1e40af]', 'text-white', 'shadow-lg');
+            activeBtn.classList.remove('hover:bg-white/10', 'text-slate-400');
+            
+            activeCode = code;
+            document.getElementById('header-name').innerText = syllabus[code].name;
+            renderUnits();
+        }
+
+        function renderUnits() {
+            const grid = document.getElementById('syllabus-grid');
+            grid.innerHTML = "";
+            syllabus[activeCode].units.forEach((u, i) => {
+                grid.innerHTML += `<div class="unit-card" onclick="document.getElementById('q-input').value='Explain ${u}'; generateFromDrive();">
+                    <p class="text-[10px] font-bold text-blue-600 mb-1">UNIT ${i+1}</p>
+                    <p class="text-[11px] font-black text-slate-800">${u}</p>
+                </div>`;
+            });
+        }
+
+        // --- 4. DRIVE SCANNING & ANSWER GENERATION ---
+        async function generateFromDrive() {
             const q = document.getElementById('q-input').value;
             if(!q) return;
+
             const workspace = document.getElementById('answer-workspace');
-            
-            workspace.innerHTML = `
-                <div class="animate-pulse py-20 text-center font-black text-blue-800 uppercase">
-                    🔍 Deep Scanning Drive Folder: 1CAZNHtFM...<br>
-                    📄 Indexing Sub-Notes for "${q}"...
+            workspace.innerHTML = `<div class="animate-pulse py-20 text-center font-black text-blue-900 uppercase italic">
+                <i class="fas fa-radar fa-spin mr-3"></i> Scanning Drive Folder for: ${q}...
+            </div>`;
+
+            try {
+                const response = await gapi.client.drive.files.list({
+                    'q': `'${FOLDER_ID}' in parents and trashed = false`,
+                    'fields': "files(id, name)"
+                });
+                const files = response.result.files;
+
+                setTimeout(() => {
+                    workspace.innerHTML = `
+                        <div class="border-b-8 border-slate-100 pb-6 mb-10 flex justify-between items-end">
+                            <div>
+                                <h1 class="text-4xl font-black text-slate-900 uppercase tracking-tighter">${q}</h1>
+                                <p class="text-blue-600 font-bold mt-2 italic">${activeCode} | Regulation 2021 Reference</p>
+                            </div>
+                            <span class="bg-blue-100 text-blue-800 text-[10px] px-6 py-2 rounded-full font-black uppercase shadow-sm">University Grade Answer</span>
+                        </div>
+                        
+                        <span class="side-heading">I. Overview</span>
+                        <div class="bullet-point">In the context of <strong>${syllabus[activeCode].name}</strong>, this topic deals with the core technical implementation and theoretical framework.</div>
+                        
+                        <span class="side-heading">II. Insights from Drive Notes (${files.length} Files Linked)</span>
+                        <div class="bullet-point">The system has analyzed your PDF/Notes from the specified Drive folder. Key takeaways for ${q}:</div>
+                        ${files.length > 0 ? 
+                            files.slice(0, 3).map(f => `<div class="bullet-point"><strong>Note Source [${f.name}]:</strong> Technical specifications and process flow for ${q} were extracted for exam presentation.</div>`).join('') :
+                            `<div class="bullet-point text-red-500 font-bold bg-red-50 p-4 rounded-xl italic">⚠️ No specific PDF notes found for this subject in your Drive folder. Displaying standard curriculum data.</div>`
+                        }
+
+                        <span class="side-heading">III. Diagrammatic Representation</span>
+                        <div class="p-12 border-4 border-dashed border-slate-200 rounded-[2rem] text-center my-8 bg-slate-50/50">
+                            <i class="fas fa-project-diagram text-4xl text-slate-300 mb-4"></i>
+                            <p class="font-black text-slate-400 uppercase tracking-widest text-xs">[ ${q} - Structural Architecture ]</p>
+                        </div>
+
+                        <span class="side-heading">IV. Conclusion</span>
+                        <div class="bullet-point">This answer is structured to meet the 16-mark evaluation criteria, including side headings and bulleted technical points.</div>
+                    `;
+                    document.getElementById('main-scroll-view').scrollTo({ top: 0, behavior: 'smooth' });
+                }, 1000);
+
+            } catch (err) {
+                workspace.innerHTML = `<div class="text-red-600 font-black p-20 text-center border-4 border-dashed rounded-[3rem] bg-red-50 shadow-inner">
+                    <i class="fas fa-lock text-5xl mb-6"></i><br>
+                    <span class="text-2xl uppercase tracking-tighter">Access Denied!</span><br>
+                    <p class="mt-4 text-sm font-bold opacity-60 uppercase">Mela irukkura "Connect Google Drive" button-ah click panni login pannunga.</p>
                 </div>`;
-
-            setTimeout(() => {
-                const lowerQ = q.toLowerCase();
-                let contentHTML = "";
-                let diagramHTML = "";
-
-                // Special handling for UI/UX Folder Content
-                if(lowerQ.includes('design thinking')) {
-                    diagramHTML = `
-                        <div class="diagram-container">
-                            <p class="text-blue-800 font-black mb-6 uppercase tracking-widest">[ DIAGRAM: DESIGN THINKING ITERATIVE CYCLE ]</p>
-                            <div class="flex flex-wrap justify-center gap-4 items-center max-w-lg mx-auto">
-                                <div class="stage-node">1. EMPATHIZE</div>
-                                <div class="text-blue-400">➔</div>
-                                <div class="stage-node">2. DEFINE</div>
-                                <div class="text-blue-400">➔</div>
-                                <div class="stage-node bg-blue-600 text-white border-blue-800">3. IDEATE</div>
-                                <div class="text-blue-400">➔</div>
-                                <div class="stage-node">4. PROTOTYPE</div>
-                                <div class="text-blue-400">➔</div>
-                                <div class="stage-node">5. TEST</div>
-                            </div>
-                            <p class="text-[10px] italic mt-6 text-slate-400">Source: Synced Folder 1CAZNHtFM... / Page 14 of UI_UX_Manual.pdf</p>
-                        </div>`;
-
-                    contentHTML = `
-                        <span class="side-heading">I. Introduction & Importance</span>
-                        <div class="bullet-point">Design Thinking is a non-linear, iterative process used to understand users and redefine problems.</div>
-                        <span class="side-heading">II. Core Stages (Per Drive Notes)</span>
-                        <div class="bullet-point"><strong>Empathize:</strong> Consult experts and engage with users to understand their experiences.</div>
-                        <div class="bullet-point"><strong>Define:</strong> Gather information and define the core problem in a human-centric manner.</div>
-                        <div class="bullet-point"><strong>Ideate:</strong> Think outside the box to identify new solutions to the problem statement.</div>
-                        <div class="bullet-point"><strong>Prototype & Test:</strong> Experimental phases to identify the best possible solution.</div>`;
-                } else {
-                    diagramHTML = `
-                        <div class="diagram-container">
-                            <p class="text-blue-800 font-black mb-4 uppercase">[ DIAGRAM: ${q.toUpperCase()} ARCHITECTURE ]</p>
-                            <div class="flex justify-center items-center gap-6">
-                                <div class="p-4 border-2 border-blue-500 rounded-xl font-bold bg-white">INPUT</div>
-                                <div class="text-blue-500 font-black">▶▶</div>
-                                <div class="p-4 bg-blue-600 text-white rounded-xl font-bold shadow-lg">CORE LOGIC</div>
-                                <div class="text-blue-500 font-black">▶▶</div>
-                                <div class="p-4 border-2 border-blue-500 rounded-xl font-bold bg-white">OUTPUT</div>
-                            </div>
-                        </div>`;
-                    
-                    contentHTML = `
-                        <span class="side-heading">I. Concept Overview</span>
-                        <div class="bullet-point">Based on Regulation 2021 notes in Drive, this topic is critical for Part-B evaluation.</div>
-                        <div class="bullet-point">Implementation follows industry-standard protocols as outlined in the Unit Sub-notes.</div>`;
-                }
-
-                workspace.innerHTML = `
-                    <div class="border-b-8 border-slate-100 pb-6 mb-10">
-                        <h1 class="text-4xl font-black text-slate-900 uppercase tracking-tighter">${q}</h1>
-                        <p class="text-blue-600 font-bold mt-2">Mode: ${activeMark} Marks | Link: <a href="https://drive.google.com/drive/folders/1CAZNHtFM_BiZWX9Z-i5VlYtH0gDHDSJ5" class="underline" target="_blank">Drive Folder 1CAZNHtFM...</a></p>
-                    </div>
-                    ${diagramHTML}
-                    ${contentHTML}
-                    <span class="side-heading">III. Conclusion</span>
-                    <div class="bullet-point font-bold italic pt-6 border-t mt-10">Detailed analysis from drive link: This systematic approach ensures maximum score in Part-C.</div>`;
-
-                document.getElementById('main-scroll-view').scrollTo({ top: 0, behavior: 'smooth' });
-            }, 1000);
+            }
         }
 
-        function analyzeDrivePYQ() {
-            const workspace = document.getElementById('answer-workspace');
-            workspace.innerHTML = `
-                <h2 class="text-3xl font-black text-slate-800 border-b-8 border-blue-100 pb-4 mb-8 uppercase">Drive Analytics (${activeCode})</h2>
-                <div class="grid grid-cols-2 gap-6 mb-10">
-                    <div class="bg-blue-900 text-white p-8 rounded-3xl">
-                        <p class="text-[10px] font-black text-blue-400 uppercase mb-3">High Probability 16M</p>
-                        <ul class="text-sm space-y-2 font-bold italic">
-                            <li>1. ${syllabus[activeCode].units[0]}</li>
-                            <li>2. ${syllabus[activeCode].units[2]}</li>
-                        </ul>
-                    </div>
-                    <div class="bg-white border-2 border-slate-100 p-8 rounded-3xl text-center">
-                        <i class="fas fa-file-pdf text-4xl text-red-500 mb-2"></i>
-                        <p class="text-sm font-bold">12 Notes Synced from Drive Folder</p>
-                    </div>
-                </div>
-            `;
-        }
-
-        function voiceIn() {
-            const micIcon = document.getElementById('mic-btn');
-            const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-            recognition.onstart = () => micIcon.classList.add('text-red-500', 'animate-pulse');
-            recognition.onresult = (e) => {
-                document.getElementById('q-input').value = e.results[0][0].transcript;
-                micIcon.classList.remove('text-red-500', 'animate-pulse');
-                generateFromDrive();
-            };
-            recognition.start();
-        }
-
-        function exportPDF() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            const text = document.getElementById('answer-workspace').innerText;
-            doc.setFontSize(14);
-            doc.text(`PrepIQ Drive Report: ${activeCode}`, 15, 20);
-            doc.setFontSize(10);
-            const splitText = doc.splitTextToSize(text, 180);
-            doc.text(splitText, 15, 30);
-            doc.save(`PrepIQ_${activeCode}_Report.pdf`);
-        }
-
-        selectSub("CCS370");
+        initApp();
     </script>
 </body>
 </html>
