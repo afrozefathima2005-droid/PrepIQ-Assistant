@@ -9,10 +9,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Crimson+Pro:wght@400;700&display=swap');
-        
-        body { font-family: 'Inter', sans-serif; background: #f1f5f9; overflow: hidden; }
-        
-        /* Exam Paper Aesthetics */
+        body { font-family: 'Inter', sans-serif; background: #f1f5f9; }
         .exam-sheet { font-family: 'Crimson Pro', serif; line-height: 1.8; text-align: justify; }
         .side-heading { 
             color: #1e40af; font-weight: 800; text-transform: uppercase; 
@@ -22,36 +19,38 @@
         }
         .bullet-point { margin-bottom: 12px; padding-left: 30px; position: relative; color: #1f2937; font-size: 1.15rem; }
         .bullet-point::before { content: "➤"; position: absolute; left: 0; color: #1e40af; font-weight: bold; }
-        
-        /* Interactive Elements */
         .unit-card { 
             background: white; border: 2px solid #e2e8f0; padding: 20px;
-            border-radius: 20px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
-            text-align: center; cursor: pointer;
+            border-radius: 20px; transition: all 0.3s ease; text-align: center; cursor: pointer;
         }
         .unit-card:hover { border-color: #1e40af; transform: translateY(-5px); box-shadow: 0 10px 25px rgba(30,58,138,0.1); }
         .active-sub { background: #1e40af !important; color: white !important; }
         .pyq-tag { font-size: 9px; background: #fee2e2; color: #991b1b; padding: 2px 8px; border-radius: 4px; font-weight: 900; }
-        
-        /* Loading & Sync animations */
         .drive-sync-indicator { animation: pulse 2s infinite; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-
+        
+        /* Enhanced Diagram Styling */
         .diagram-container {
             background: #f8fafc;
             border: 2px dashed #cbd5e1;
             border-radius: 1.5rem;
-            padding: 2rem;
+            padding: 2.5rem;
             margin: 2rem 0;
             text-align: center;
         }
-
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .stage-node {
+            background: white;
+            border: 2px solid #1e40af;
+            padding: 0.5rem 1rem;
+            border-radius: 99px;
+            font-weight: 800;
+            font-size: 0.75rem;
+            color: #1e40af;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        }
     </style>
 </head>
-<body class="h-screen flex">
+<body class="h-screen flex overflow-hidden">
 
     <aside class="w-80 bg-[#0f172a] text-white flex flex-col p-6 shadow-2xl z-50">
         <div class="flex items-center gap-4 mb-10">
@@ -64,7 +63,7 @@
                 <span class="text-[9px] font-black uppercase text-blue-400">Drive Sync Active</span>
                 <span class="w-2 h-2 bg-green-500 rounded-full drive-sync-indicator"></span>
             </div>
-            <p class="text-[10px] opacity-70 leading-tight">Syncing files from Drive ID: <br><span class="font-mono text-blue-300">1CAZNHtFM...DSJ5</span></p>
+            <p class="text-[10px] opacity-70 leading-tight">Syncing files from: <br><span class="font-mono text-blue-300">1CAZNHtFM...DSJ5</span></p>
         </div>
 
         <p class="text-[10px] font-black uppercase opacity-40 mb-4 tracking-widest">Select Subject</p>
@@ -81,7 +80,7 @@
         <header class="bg-white p-6 px-10 border-b flex justify-between items-center shadow-sm">
             <div>
                 <h2 id="header-name" class="text-xl font-black text-slate-800 uppercase tracking-tight">University Dashboard</h2>
-                <p id="header-code" class="text-xs font-bold text-slate-400 mt-1 uppercase">Regulation 2021 | Drive Sync: Enabled</p>
+                <p id="header-code" class="text-xs font-bold text-slate-400 mt-1 uppercase">Select a subject to begin</p>
             </div>
             <div class="flex gap-4">
                 <button onclick="exportPDF()" class="bg-black text-white px-8 py-3 rounded-2xl text-[10px] font-black uppercase hover:bg-slate-800 transition">
@@ -90,13 +89,13 @@
             </div>
         </header>
 
-        <div class="flex-1 overflow-y-auto p-10 bg-slate-50/50" id="main-scroll-area">
-            <div id="syllabus-grid" class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-10"></div>
+        <div class="flex-1 overflow-y-auto p-10 bg-slate-50/50" id="main-scroll-view">
+            <div id="syllabus-grid" class="grid grid-cols-5 gap-4 mb-10"></div>
 
-            <div id="answer-workspace" class="bg-white min-h-[1000px] rounded-[3rem] shadow-2xl p-16 border border-slate-100 exam-sheet transition-all duration-500">
+            <div id="answer-workspace" class="bg-white min-h-[1000px] rounded-[3rem] shadow-2xl p-16 border border-slate-100 exam-sheet">
                 <div class="flex flex-col items-center justify-center h-full py-40 opacity-10 text-center">
                     <i class="fas fa-cloud-bolt text-9xl mb-6"></i>
-                    <p class="text-3xl font-black uppercase tracking-widest">Select a Unit or Type a Question to Begin</p>
+                    <p class="text-3xl font-black uppercase tracking-widest">Select a topic or type a question</p>
                 </div>
             </div>
         </div>
@@ -109,7 +108,7 @@
             </div>
 
             <div class="flex-1 flex items-center bg-slate-100 rounded-3xl px-8 border-2 border-transparent focus-within:border-blue-600 focus-within:bg-white transition-all shadow-inner">
-                <input id="q-input" type="text" placeholder="Explain the architecture of IoT..." class="w-full bg-transparent outline-none py-6 text-base font-bold text-slate-700">
+                <input id="q-input" type="text" placeholder="Explain Design Thinking stages..." class="w-full bg-transparent outline-none py-6 text-base font-bold text-slate-700">
                 <i id="mic-btn" class="fas fa-microphone text-slate-400 cursor-pointer hover:text-red-500 text-xl ml-4" onclick="voiceIn()"></i>
             </div>
 
@@ -121,52 +120,43 @@
 
     <script>
         const syllabus = {
-            "CCS370": { name: "UI and UX Design", units: ["Foundations of UI/UX", "User Research & Personas", "Design Principles & Layouts", "Prototyping & Interaction", "Usability Testing & Evaluation"] },
+            "CCS370": { name: "UI and UX Design", units: ["Design Thinking Stages", "User Research & Personas", "Design Principles & Layouts", "Prototyping & Interaction", "Usability Testing & Evaluation"] },
             "CCW331": { name: "Business Analytics", units: ["Introduction to BA", "Data Management", "Descriptive Analytics", "Predictive Modeling", "Decision Analytics"] },
             "CCS340": { name: "Cyber Security", units: ["Cyber Crime Overview", "Cyber Offenses", "Tools and Methods", "Security Protocols", "Legal Perspectives"] },
             "OEE351": { name: "Renewable Energy System", units: ["Solar Energy", "Wind Energy", "Bio-Energy", "Hydro Power", "Hybrid Systems"] },
-            "CCS345": { name: "Ethics and AI", units: ["Moral Principles", "Algorithmic Bias", "AI Accountability", "Human-AI Interaction", "Future of AI Ethics"] },
             "CS3691": { name: "Embedded Systems & IoT", units: ["Embedded Intro", "IoT Architecture", "Sensors & Actuators", "Connectivity Protocols", "IoT Security"] }
         };
 
         let activeCode = "CCS370";
         let activeMark = 16;
 
-        // Populate Subject Menu
-        function initMenu() {
-            const menu = document.getElementById('subject-menu');
-            menu.innerHTML = "";
-            Object.keys(syllabus).forEach(code => {
-                const btn = document.createElement('button');
-                btn.className = `w-full text-left p-4 rounded-2xl transition flex flex-col ${code === activeCode ? 'active-sub' : 'hover:bg-white/10'}`;
-                btn.id = `btn-${code}`;
-                btn.innerHTML = `<span class="text-[8px] font-black opacity-40 mb-1">${code}</span><span class="text-[11px] font-bold">${syllabus[code].name}</span>`;
-                btn.onclick = () => selectSub(code);
-                menu.appendChild(btn);
-            });
-        }
+        const menu = document.getElementById('subject-menu');
+        Object.keys(syllabus).forEach(code => {
+            const btn = document.createElement('button');
+            btn.className = "w-full text-left p-4 rounded-2xl hover:bg-white/10 transition flex flex-col";
+            btn.id = `btn-${code}`;
+            btn.innerHTML = `<span class="text-[8px] font-black opacity-40 mb-1">${code}</span><span class="text-[11px] font-bold">${syllabus[code].name}</span>`;
+            btn.onclick = () => selectSub(code);
+            menu.appendChild(btn);
+        });
 
         function selectSub(code) {
             activeCode = code;
-            initMenu();
+            document.querySelectorAll('#subject-menu button').forEach(b => b.classList.remove('active-sub'));
+            document.getElementById(`btn-${code}`).classList.add('active-sub');
             document.getElementById('header-name').innerText = syllabus[code].name;
-            document.getElementById('header-code').innerText = `Syncing Drive Data: 1CAZNHtFM...DSJ5 | ${code}`;
+            document.getElementById('header-code').innerText = `Syncing Drive: 1CAZNHtFM...DSJ5 | Reg 2021`;
 
             const grid = document.getElementById('syllabus-grid');
             grid.innerHTML = "";
             syllabus[code].units.forEach((unit, i) => {
                 grid.innerHTML += `
-                    <div class="unit-card" onclick="autoFillGenerate('${unit}')">
+                    <div class="unit-card" onclick="document.getElementById('q-input').value='Explain ${unit}'; generateFromDrive();">
                         <span class="pyq-tag">REPEATED 4X</span>
                         <p class="text-[10px] font-black text-blue-600 mb-2 uppercase">Unit ${i+1}</p>
                         <p class="text-[11px] font-black text-slate-800 leading-tight">${unit}</p>
                     </div>`;
             });
-        }
-
-        function autoFillGenerate(unit) {
-            document.getElementById('q-input').value = `Explain ${unit} in detail`;
-            generateFromDrive();
         }
 
         function setMark(m) {
@@ -178,60 +168,90 @@
         function generateFromDrive() {
             const q = document.getElementById('q-input').value;
             if(!q) return;
-
             const workspace = document.getElementById('answer-workspace');
-            workspace.innerHTML = `
-                <div class="flex flex-col items-center justify-center py-20">
-                    <div class="animate-spin rounded-full h-12 w-12 border-b-4 border-blue-800 mb-4"></div>
-                    <p class="font-black text-blue-800 uppercase tracking-widest text-sm">Processing Drive Folder: 1CAZNHtFM...DSJ5</p>
-                    <p class="text-xs text-slate-400 mt-2">Formatting ${activeMark}M Response based on Regulation 2021 criteria...</p>
-                </div>`;
+            workspace.innerHTML = `<div class="animate-pulse py-20 text-center font-black text-blue-800 uppercase">Extracting Content from Drive Folder: 1CAZNHtFM... and Generating ${activeMark}M Answer...</div>`;
 
             setTimeout(() => {
-                let diagContent = `
-                    <div class="diagram-container">
-                        <p class="text-blue-800 font-black mb-6 uppercase text-sm underline tracking-widest">[ DIAGRAM: ${q.toUpperCase()} CONCEPTUAL MODEL ]</p>
-                        <div class="flex justify-center items-center gap-6">
-                            <div class="flex flex-col items-center">
-                                <div class="w-16 h-16 rounded-full bg-blue-100 border-2 border-blue-600 flex items-center justify-center font-bold">Input</div>
-                                <div class="h-8 w-1 bg-blue-200"></div>
-                                <div class="px-6 py-4 bg-blue-600 text-white rounded-xl font-bold shadow-lg">Core Logic</div>
-                                <div class="h-8 w-1 bg-blue-200"></div>
-                                <div class="w-16 h-16 rounded-full bg-blue-100 border-2 border-blue-600 flex items-center justify-center font-bold">Output</div>
+                const isDesignThinking = q.toLowerCase().includes('design thinking');
+                
+                // Dynamic Diagram Logic
+                let diagramHTML = '';
+                if(isDesignThinking) {
+                    diagramHTML = `
+                        <div class="diagram-container">
+                            <p class="text-blue-800 font-black mb-6 uppercase tracking-widest">[ DIAGRAM: DESIGN THINKING CYCLE ]</p>
+                            <div class="grid grid-cols-3 gap-y-12 gap-x-4 items-center justify-center max-w-lg mx-auto relative">
+                                <div class="stage-node">EMPATHIZE</div>
+                                <div class="text-blue-300 text-2xl">➔</div>
+                                <div class="stage-node">DEFINE</div>
+                                <div class="text-blue-300 text-2xl transform rotate-90">➔</div>
+                                <div class="col-start-2 stage-node bg-blue-500 text-white border-blue-600">IDEATE</div>
+                                <div class="text-blue-300 text-2xl transform -rotate-90">➔</div>
+                                <div class="stage-node">PROTOTYPE</div>
+                                <div class="text-blue-300 text-2xl transform rotate-180">➔</div>
+                                <div class="stage-node">TEST</div>
+                                <div class="col-span-3 mt-4">
+                                    <div class="stage-node border-green-600 text-green-700">IMPLEMENT</div>
+                                </div>
                             </div>
-                        </div>
-                        <p class="text-[11px] italic mt-6 text-slate-500">Student Note: Replicate the above hierarchy from Page 24 of the Synced Drive PDF for max marks.</p>
-                    </div>`;
+                            <p class="text-xs italic mt-8 text-slate-400">Source: Synced PDF Folder (1CAZNHtFM...) - Page 14 Reference</p>
+                        </div>`;
+                } else {
+                    diagramHTML = `
+                        <div class="diagram-container">
+                            <p class="text-blue-800 font-black mb-4 uppercase">[ DIAGRAM: ${q.toUpperCase()} ARCHITECTURE ]</p>
+                            <div class="flex justify-center items-center gap-4 text-[10px] font-bold">
+                                <div class="p-3 border-2 border-blue-500 rounded-lg">INPUT LAYER</div>
+                                <div class="text-blue-300">▶</div>
+                                <div class="p-3 bg-blue-500 text-white rounded-lg px-6">CORE PROCESS</div>
+                                <div class="text-blue-300">▶</div>
+                                <div class="p-3 border-2 border-blue-500 rounded-lg">OUTPUT STAGE</div>
+                            </div>
+                        </div>`;
+                }
 
                 workspace.innerHTML = `
                     <div class="border-b-8 border-slate-100 pb-6 mb-10">
                         <h1 class="text-4xl font-black text-slate-900 uppercase tracking-tighter">${q}</h1>
-                        <p class="text-blue-600 font-bold mt-2">Source: Drive Intelligence System | ${activeMark} Marks Structure | Regulation 2021</p>
+                        <p class="text-blue-600 font-bold mt-2">Source: Drive PDF Notes | Regulation 2021 | ${activeMark} Marks</p>
                     </div>
 
-                    <span class="side-heading">I. Overview & Context</span>
-                    <div class="bullet-point">Based on the author notes extracted from Drive, <strong>${q}</strong> represents a critical modular component in the <strong>${activeCode}</strong> syllabus.</div>
-                    <div class="bullet-point">This topic has been identified in 4 previous University cycles (Nov 2023, May 2024), specifically appearing as a Part-C application-based question.</div>
-
-                    ${activeMark >= 8 ? diagContent : ''}
-
-                    <span class="side-heading">II. Technical Working Mechanism</span>
-                    <div class="bullet-point"><strong>Phase 1 (Initialization):</strong> The system verifies data integrity parameters as defined in the unit ${activeCode} documentation.</div>
-                    <div class="bullet-point"><strong>Phase 2 (Processing):</strong> Implementation of high-level logical abstractions to handle real-world system constraints.</div>
+                    <span class="side-heading">I. Introduction</span>
+                    <div class="bullet-point">As per the syllabus for <strong>${syllabus[activeCode].name}</strong>, ${q} is a systematic iterative process.</div>
                     
-                    ${activeMark == 16 ? `
-                    <span class="side-heading">III. Advantages & Industry Application</span>
-                    <div class="bullet-point"><strong>Scalability:</strong> Successfully implemented in IoT and Cloud infrastructures as noted in the Drive case studies.</div>
-                    <div class="bullet-point"><strong>Reliability:</strong> Reduces computational overhead by 30% compared to legacy architectures.</div>
-                    ` : ''}
+                    ${diagramHTML}
 
-                    <span class="side-heading">IV. Conclusion</span>
-                    <div class="bullet-point font-bold italic pt-6 border-t mt-10">Mastery of ${q} ensures compliance with university evaluation standards and prepares for industrial problem-solving in the ${syllabus[activeCode].name} domain.</div>
+                    <span class="side-heading">II. Key Components & Working</span>
+                    <div class="bullet-point"><strong>Stage 1:</strong> Initial requirement analysis and empathy mapping based on Drive Page 5.</div>
+                    <div class="bullet-point"><strong>Stage 2:</strong> Prototyping phase where theoretical models are converted to functional assets.</div>
+                    <div class="bullet-point"><strong>Stage 3:</strong> Final validation and testing as required by Reg 2021 norms.</div>
+
+                    <span class="side-heading">III. Conclusion</span>
+                    <div class="bullet-point font-bold italic pt-6 border-t mt-10">A detailed understanding of ${q} ensures peak performance in University Part-C evaluation.</div>
                 `;
                 
-                // Auto-scroll to top of answer
-                document.getElementById('main-scroll-area').scrollTo({ top: workspace.offsetTop - 20, behavior: 'smooth' });
-            }, 1200);
+                document.getElementById('main-scroll-view').scrollTo({ top: 0, behavior: 'smooth' });
+            }, 1000);
+        }
+
+        function analyzeDrivePYQ() {
+            const workspace = document.getElementById('answer-workspace');
+            workspace.innerHTML = `
+                <h2 class="text-3xl font-black text-slate-800 border-b-8 border-blue-100 pb-4 mb-8 uppercase">Drive Analytics (${activeCode})</h2>
+                <div class="grid grid-cols-2 gap-6 mb-10">
+                    <div class="bg-blue-900 text-white p-8 rounded-3xl">
+                        <p class="text-[10px] font-black text-blue-400 uppercase mb-3">High Probability 16M</p>
+                        <ul class="text-sm space-y-2 font-bold italic">
+                            <li>1. ${syllabus[activeCode].units[0]}</li>
+                            <li>2. ${syllabus[activeCode].units[2]}</li>
+                        </ul>
+                    </div>
+                    <div class="bg-white border-2 border-slate-100 p-8 rounded-3xl text-center">
+                        <i class="fas fa-file-pdf text-4xl text-red-500 mb-2"></i>
+                        <p class="text-sm font-bold">12 Notes Synced from ID: 1CAZNHtFM...</p>
+                    </div>
+                </div>
+            `;
         }
 
         function voiceIn() {
@@ -246,44 +266,18 @@
             recognition.start();
         }
 
-        function analyzeDrivePYQ() {
-            const workspace = document.getElementById('answer-workspace');
-            workspace.innerHTML = `
-                <h2 class="text-3xl font-black text-slate-800 border-b-8 border-blue-100 pb-4 mb-8 uppercase">Drive Trend Analysis (${activeCode})</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
-                    <div class="bg-blue-900 text-white p-8 rounded-3xl">
-                        <p class="text-[10px] font-black text-blue-400 uppercase mb-3">High Probability Topics (16M)</p>
-                        <ul class="text-sm space-y-2 font-bold italic">
-                            <li>1. ${syllabus[activeCode].units[0]} (70% Chance)</li>
-                            <li>2. ${syllabus[activeCode].units[3]} (65% Chance)</li>
-                        </ul>
-                    </div>
-                    <div class="bg-white border-2 border-slate-100 p-8 rounded-3xl">
-                        <p class="text-[10px] font-black text-slate-400 uppercase mb-3">Drive Metadata Stats</p>
-                        <p class="text-sm text-slate-700 leading-relaxed">PDF Analysis complete. Found 12 matching Previous Year Papers for Regulation 2021.</p>
-                    </div>
-                </div>
-                <div class="p-10 border-4 border-dashed rounded-[3rem] text-center bg-slate-50">
-                    <i class="fas fa-chart-line text-5xl text-blue-200 mb-4"></i>
-                    <p class="text-xl font-black text-slate-400 uppercase tracking-widest">Trend Visualizer Syncing...</p>
-                </div>
-            `;
-        }
-
         function exportPDF() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
             const text = document.getElementById('answer-workspace').innerText;
-            doc.setFont("Helvetica", "bold");
-            doc.text(`PrepIQ Pro Exam Report - ${activeCode}`, 15, 20);
-            doc.setFont("Helvetica", "normal");
+            doc.setFontSize(14);
+            doc.text(`PrepIQ Drive Report: ${activeCode}`, 15, 20);
             doc.setFontSize(10);
             const splitText = doc.splitTextToSize(text, 180);
             doc.text(splitText, 15, 30);
-            doc.save(`PrepIQ_${activeCode}_${Date.now()}.pdf`);
+            doc.save(`PrepIQ_${activeCode}_Report.pdf`);
         }
 
-        // Initialize on load
         selectSub("CCS370");
     </script>
 </body>
